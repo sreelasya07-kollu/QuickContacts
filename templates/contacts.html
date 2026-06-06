@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}View Contacts{% endblock %}
+{% block page_title %}View Contacts{% endblock %}
+
+{% block content %}
+<section class="toolbar animate-in">
+    <div class="filter-group">
+        <label for="categoryFilter">Filter by Category:</label>
+        <select id="categoryFilter">
+            <option value="All">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <span class="contact-count" id="contactCount">0 contacts</span>
+</section>
+
+<section class="card animate-in">
+    <div class="card-body table-wrapper">
+        <table class="contacts-table" id="contactsTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Category</th>
+                    <th>Favorite</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="contactsBody">
+                <tr><td colspan="6" class="empty-state">Loading contacts...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Edit Contact</h2>
+            <button class="modal-close" id="closeEditModal">&times;</button>
+        </div>
+        <form id="editContactForm" class="contact-form">
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label for="editName">Full Name</label>
+                <input type="text" id="editName" required>
+            </div>
+            <div class="form-group">
+                <label for="editPhone">Phone Number</label>
+                <input type="tel" id="editPhone" required>
+            </div>
+            <div class="form-group">
+                <label for="editEmail">Email Address</label>
+                <input type="email" id="editEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="editCategory">Category</label>
+                <select id="editCategory" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="editFavorite">
+                    <span>Mark as Favorite ⭐</span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Update Contact</button>
+                <button type="button" class="btn secondary" id="cancelEdit">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/contacts.js') }}"></script>
+{% endblock %}

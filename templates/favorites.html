@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Favorites{% endblock %}
+{% block page_title %}Favorite Contacts{% endblock %}
+
+{% block content %}
+<section class="toolbar animate-in">
+    <p class="section-desc">Your starred contacts for quick access</p>
+    <span class="contact-count" id="favoriteCount">0 favorites</span>
+</section>
+
+<section class="card animate-in">
+    <div class="card-body">
+        <div class="favorites-grid" id="favoritesGrid">
+            <p class="empty-state">Loading favorites...</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/favorites.js') }}"></script>
+{% endblock %}

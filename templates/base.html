@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ContactHub{% endblock %} | Smart Contact Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">📇</span>
+                    <div class="logo-text">
+                        <span class="logo-name">ContactHub</span>
+                        <span class="logo-tagline">Smart Contact Manager</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('add_contact_page') }}" class="nav-item {% if active == 'add' %}active{% endif %}">
+                    <span class="nav-icon">➕</span>
+                    <span>Add Contact</span>
+                </a>
+                <a href="{{ url_for('contacts_page') }}" class="nav-item {% if active == 'contacts' %}active{% endif %}">
+                    <span class="nav-icon">👥</span>
+                    <span>View Contacts</span>
+                </a>
+                <a href="{{ url_for('search_page') }}" class="nav-item {% if active == 'search' %}active{% endif %}">
+                    <span class="nav-icon">🔍</span>
+                    <span>Search</span>
+                </a>
+                <a href="{{ url_for('favorites_page') }}" class="nav-item {% if active == 'favorites' %}active{% endif %}">
+                    <span class="nav-icon">⭐</span>
+                    <span>Favorites</span>
+                </a>
+                <a href="{{ url_for('performance_page') }}" class="nav-item {% if active == 'performance' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span>Performance</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Data Structures Demo</p>
+                <small>List · Dict · Queue</small>
+            </div>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="topbar">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="topbar-actions">
+                    <span class="status-badge">● Online</span>
+                </div>
+            </header>
+
+            <main class="main-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
