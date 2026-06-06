@@ -52,6 +52,8 @@ function updateThemeToggleLabel(theme) {
     const toggle = document.getElementById('themeToggle');
     if (!toggle) return;
 
+    toggle.setAttribute('data-theme-state', theme);
+
     const label = toggle.querySelector('.theme-label');
     if (label) {
         label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';

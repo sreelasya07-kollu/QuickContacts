@@ -132,7 +132,7 @@ def measure_search_performance(query):
     dict_results, dict_comparisons = search_dict_by_phone(phone_target)
     dict_time = time.perf_counter() - dict_start
 
-    faster = "Dictionary (O(1))" if dict_time <= list_time else "List (O(n))"
+    faster = "Smart Search" if dict_time <= list_time else "Normal Search"
 
     return {
         "query": query,
@@ -140,9 +140,17 @@ def measure_search_performance(query):
         "dict_time_ms": round(dict_time * 1000, 4),
         "list_comparisons": list_comparisons,
         "dict_comparisons": dict_comparisons,
+        "contacts_checked": list_comparisons,
+        "lookups_performed": dict_comparisons,
         "list_complexity": "O(n)",
         "dict_complexity": "O(1)",
         "faster": faster,
+        "faster_explanation": (
+            "Smart Search finds contacts instantly using a phone index, "
+            f"while Normal Search checked {list_comparisons} contact(s) one by one."
+            if dict_time <= list_time
+            else "Normal Search was faster for this particular query."
+        ),
         "list_matches": len(list_results),
         "dict_matches": len(dict_results),
         "total_contacts": len(contacts_list),
@@ -409,6 +417,14 @@ def api_add_recent_search(contact_id):
 def api_performance():
     query = request.args.get("q", "a").strip() or "a"
     return jsonify(measure_performance(query))
+
+
+@app.route("/api/performance/search")
+def api_performance_search():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify({"error": "Search query is required"}), 400
+    return jsonify(measure_search_performance(query))
 
 
 init_sample_data()
