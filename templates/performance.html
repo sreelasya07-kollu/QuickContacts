@@ -10,89 +10,86 @@
 {% block content %}
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Contact Lookup Comparison</h2>
-        <span class="badge">List vs Dictionary</span>
+        <h2>Search Benchmark</h2>
+        <span class="badge badge-soft">Compare Methods</span>
     </div>
     <div class="card-body">
         <p class="section-desc">
-            Compare contact lookup performance using Python <strong>List</strong> (Linear Search - O(n))
-            vs <strong>Dictionary</strong> (Hash Lookup - O(1)). Timing measured with Python's <code>time</code> module.
+            Run a benchmark to see how Normal Search and Smart Search compare on your contact list.
         </p>
         <div class="performance-controls">
             <div class="form-group">
                 <label for="perfQuery">Search Query</label>
-                <input type="text" id="perfQuery" placeholder="Enter search term (e.g. name or phone)" value="a">
+                <input type="text" id="perfQuery" placeholder="Enter a name or phone number" value="a">
             </div>
             <button class="btn primary" id="runBenchmark">Run Benchmark</button>
         </div>
     </div>
 </section>
 
-<section class="stats-grid animate-in">
-    <div class="stat-card">
-        <div class="stat-icon blue">📋</div>
-        <div class="stat-info">
-            <span class="stat-label">List Search Time</span>
-            <span class="stat-value" id="listTime">— ms</span>
-            <span class="stat-sub">O(n) Linear Search</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">🗂️</div>
-        <div class="stat-info">
-            <span class="stat-label">Dictionary Search Time</span>
-            <span class="stat-value" id="dictTime">— ms</span>
-            <span class="stat-sub">O(1) Hash Lookup</span>
-        </div>
-    </div>
-    <div class="stat-card highlight">
-        <div class="stat-icon gold">🏆</div>
-        <div class="stat-info">
-            <span class="stat-label">Faster Method</span>
-            <span class="stat-value small" id="fasterMethod">Run benchmark</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon purple">👥</div>
-        <div class="stat-info">
-            <span class="stat-label">Total Contacts</span>
-            <span class="stat-value" id="totalForPerf">0</span>
-        </div>
-    </div>
-</section>
+<section class="comparison-grid hidden-section fade-load" id="benchmarkComparison"></section>
 
-<section class="card animate-in">
+<section class="timing-results hidden-section fade-load" id="benchmarkTiming"></section>
+
+<section class="card animate-in hidden-section fade-load" id="benchmarkChartSection">
     <div class="card-header">
-        <h2>Execution Time Comparison</h2>
+        <h2>Search Time Comparison</h2>
     </div>
-    <div class="card-body chart-container">
+    <div class="card-body chart-container chart-animate">
         <canvas id="performanceChart"></canvas>
     </div>
 </section>
 
 <section class="card animate-in">
-    <div class="card-header">
-        <h2>Data Structure Explanation</h2>
-    </div>
-    <div class="card-body">
-        <div class="info-grid">
-            <div class="info-card">
-                <h3>📋 Python List</h3>
-                <p>Stores contacts sequentially. Search requires iterating through every contact until a match is found.</p>
-                <span class="complexity">Time Complexity: O(n)</span>
+    <details class="tech-details" open>
+        <summary>Technical details — Python List vs Dictionary</summary>
+        <div class="tech-details-body">
+            <div class="stats-grid" id="benchmarkStats">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📋</div>
+                    <div class="stat-info">
+                        <span class="stat-label">List Search Time</span>
+                        <span class="stat-value" id="listTime">— ms</span>
+                        <span class="stat-sub">O(n) Linear Search</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">🗂️</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Dictionary Search Time</span>
+                        <span class="stat-value" id="dictTime">— ms</span>
+                        <span class="stat-sub">O(1) Hash Lookup</span>
+                    </div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-icon gold">🏆</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Faster Method</span>
+                        <span class="stat-value small" id="fasterMethod">Run benchmark</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Contacts</span>
+                        <span class="stat-value" id="totalForPerf">0</span>
+                    </div>
+                </div>
             </div>
-            <div class="info-card">
-                <h3>🗂️ Python Dictionary</h3>
-                <p>Stores contacts with hash keys for instant access. Lookup by key is nearly constant time.</p>
-                <span class="complexity">Time Complexity: O(1)</span>
-            </div>
-            <div class="info-card">
-                <h3>🔄 Python Queue (deque)</h3>
-                <p>Stores the last 5 searched contacts in FIFO order. Used for recent search history.</p>
-                <span class="complexity">Max Size: 5 items</span>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>📋 Python List</h3>
+                    <p>Stores contacts sequentially. Normal Search checks each contact until a match is found.</p>
+                    <span class="complexity">Time Complexity: O(n)</span>
+                </div>
+                <div class="info-card">
+                    <h3>🗂️ Python Dictionary</h3>
+                    <p>Indexes contacts by phone for Smart Search — direct hash lookup without scanning all contacts.</p>
+                    <span class="complexity">Time Complexity: O(1)</span>
+                </div>
             </div>
         </div>
-    </div>
+    </details>
 </section>
 {% endblock %}
 

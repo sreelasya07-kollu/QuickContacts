@@ -56,10 +56,15 @@ function clearSearch() {
     suggestionsList.classList.remove('active');
     suggestionsList.innerHTML = '';
 
-    document.getElementById('searchResultsSection').classList.add('hidden-section');
-    document.getElementById('performanceSection').classList.add('hidden-section');
+    ['searchResultsSection', 'performanceSection'].forEach(id => {
+        document.getElementById(id).classList.add('hidden-section');
+    });
+
     document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchComparisonCards').innerHTML = '';
+    document.getElementById('timingResults').innerHTML = '';
     document.getElementById('searchPerfMetrics').innerHTML = '';
+    document.getElementById('comparisonIntro').textContent = '';
     document.getElementById('resultCount').textContent = '0 found';
 
     if (searchChart) {
@@ -128,19 +133,25 @@ function renderSearchResults(results) {
     const countEl = document.getElementById('resultCount');
 
     section.classList.remove('hidden-section');
+    section.classList.add('fade-load');
     countEl.textContent = `${results.length} found`;
 
     if (results.length === 0) {
-        container.innerHTML = '<p class="empty-state">No matching contacts found</p>';
+        container.innerHTML = '<p class="empty-state">No matching contacts found. Try a different name or phone number.</p>';
         return;
     }
 
-    container.innerHTML = results.map(contact => `
-        <div class="contact-card ${contact.category === 'Emergency' ? 'emergency' : ''}">
-            <h3>${escapeHtml(contact.name)}</h3>
+    container.innerHTML = results.map((contact, index) => `
+        <div class="contact-card fade-load" style="--delay: ${index}">
+            <div class="contact-card-header">
+                <div class="contact-avatar">${getInitials(contact.name)}</div>
+                <div>
+                    <h3>${escapeHtml(contact.name)}</h3>
+                    ${contact.category ? getCategoryTag(contact.category) : ''}
+                </div>
+            </div>
             <p>📞 ${escapeHtml(contact.phone)}</p>
             <p>✉️ ${escapeHtml(contact.email)}</p>
-            ${contact.category ? `<div class="card-footer">${getCategoryTag(contact.category)}</div>` : ''}
         </div>
     `).join('');
 }
@@ -149,27 +160,73 @@ function renderPerformanceMetrics(performance) {
     if (!performance) return;
 
     const section = document.getElementById('performanceSection');
-    const container = document.getElementById('searchPerfMetrics');
-
     section.classList.remove('hidden-section');
-    container.innerHTML = `
-        <div class="perf-metric">
-            <span class="perf-label">List Search Time</span>
-            <span class="perf-value">${performance.list_time_ms} ms</span>
-            <span class="perf-sub">O(n) · ${performance.list_comparisons} comparisons</span>
+    section.classList.add('fade-load');
+
+    document.getElementById('comparisonIntro').textContent = performance.faster_explanation;
+
+    document.getElementById('searchComparisonCards').innerHTML = `
+        <div class="compare-card normal-search">
+            <div class="compare-card-top">
+                <span class="compare-icon">📋</span>
+                <div>
+                    <h3>Normal Search</h3>
+                    <p>Checks contacts one by one in a list</p>
+                </div>
+            </div>
+            <div class="compare-stat">
+                <span class="compare-stat-label">Contacts Checked</span>
+                <span class="compare-stat-value">${performance.contacts_checked}</span>
+            </div>
         </div>
-        <div class="perf-metric">
-            <span class="perf-label">Dictionary Search Time</span>
-            <span class="perf-value">${performance.dict_time_ms} ms</span>
-            <span class="perf-sub">O(1) · ${performance.dict_comparisons} comparisons</span>
+        <div class="compare-card smart-search ${performance.faster === 'Smart Search' ? 'winner' : ''}">
+            <div class="compare-card-top">
+                <span class="compare-icon">⚡</span>
+                <div>
+                    <h3>Smart Search</h3>
+                    <p>Uses a dictionary for instant phone lookup</p>
+                </div>
+            </div>
+            <div class="compare-stat">
+                <span class="compare-stat-label">Lookups Performed</span>
+                <span class="compare-stat-value">${performance.lookups_performed}</span>
+            </div>
         </div>
-        <div class="perf-metric highlight">
-            <span class="perf-label">Faster Method</span>
-            <span class="perf-value small">${escapeHtml(performance.faster)}</span>
+    `;
+
+    document.getElementById('timingResults').innerHTML = `
+        <div class="timing-row">
+            <div class="timing-item">
+                <span>Normal Search Time</span>
+                <strong>${performance.list_time_ms} ms</strong>
+            </div>
+            <div class="timing-item highlight">
+                <span>Smart Search Time</span>
+                <strong>${performance.dict_time_ms} ms</strong>
+            </div>
+            <div class="timing-item winner-badge">
+                <span>Faster Method</span>
+                <strong>${escapeHtml(performance.faster)}</strong>
+            </div>
         </div>
-        <div class="perf-metric">
-            <span class="perf-label">Total Contacts</span>
-            <span class="perf-value">${performance.total_contacts}</span>
+    `;
+
+    document.getElementById('searchPerfMetrics').innerHTML = `
+        <div class="perf-metrics-grid">
+            <div class="perf-metric">
+                <span class="perf-label">Python List · Linear Search</span>
+                <span class="perf-value">${performance.list_time_ms} ms</span>
+                <span class="perf-sub">${performance.list_complexity} · ${performance.contacts_checked} comparisons</span>
+            </div>
+            <div class="perf-metric">
+                <span class="perf-label">Python Dictionary · Hash Lookup</span>
+                <span class="perf-value">${performance.dict_time_ms} ms</span>
+                <span class="perf-sub">${performance.dict_complexity} · ${performance.lookups_performed} lookup(s)</span>
+            </div>
+            <div class="perf-metric">
+                <span class="perf-label">Total Contacts Stored</span>
+                <span class="perf-value">${performance.total_contacts}</span>
+            </div>
         </div>
     `;
 
@@ -191,7 +248,7 @@ function renderSearchChart(performance) {
     searchChart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: {
-            labels: ['List Search O(n)', 'Dictionary Search O(1)'],
+            labels: ['Normal Search', 'Smart Search'],
             datasets: [{
                 label: 'Search Time (ms)',
                 data: [performance.list_time_ms, performance.dict_time_ms],
@@ -204,13 +261,8 @@ function renderSearchChart(performance) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                duration: 700,
-                easing: 'easeOutQuart',
-            },
-            plugins: {
-                legend: { display: false },
-            },
+            animation: { duration: 700, easing: 'easeOutQuart' },
+            plugins: { legend: { display: false } },
             scales: {
                 y: {
                     beginAtZero: true,
@@ -228,4 +280,8 @@ function renderSearchChart(performance) {
 
 function getTheme() {
     return document.documentElement.getAttribute('data-theme') || 'dark';
+}
+
+function getInitials(name) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
