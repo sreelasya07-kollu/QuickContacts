@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Add Contact{% endblock %}
+{% block page_title %}Add Contact{% endblock %}
+
+{% block content %}
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>New Contact Details</h2>
+    </div>
+    <div class="card-body">
+        <form id="addContactForm" class="contact-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" placeholder="Enter full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="favorite" name="favorite">
+                    <span>Mark as Favorite ⭐</span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Save Contact</button>
+                <button type="reset" class="btn secondary">Clear Form</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/add.js') }}"></script>
+{% endblock %}
