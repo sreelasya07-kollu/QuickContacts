@@ -1,21 +1,62 @@
+const THEME_KEY = 'contacthub-theme';
+
 document.addEventListener('DOMContentLoaded', () => {
+    initSidebar();
+    initThemeToggle();
+});
+
+function initSidebar() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
 
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
+    if (!menuToggle || !sidebar) return;
 
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 &&
-                !sidebar.contains(e.target) &&
-                !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('open');
-            }
-        });
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 &&
+            !sidebar.contains(e.target) &&
+            !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    });
+}
+
+function initThemeToggle() {
+    const toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+
+    updateThemeToggleLabel(getTheme());
+
+    toggle.addEventListener('click', () => {
+        const nextTheme = getTheme() === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+        updateThemeToggleLabel(nextTheme);
+    });
+}
+
+function getTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+    document.body.classList.add('theme-transition');
+    window.setTimeout(() => document.body.classList.remove('theme-transition'), 350);
+}
+
+function updateThemeToggleLabel(theme) {
+    const toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+
+    const label = toggle.querySelector('.theme-label');
+    if (label) {
+        label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
     }
-});
+}
 
 function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -44,25 +85,9 @@ async function apiFetch(url, options = {}) {
     return data;
 }
 
-function renderRecentSearches(container, searches) {
-    if (!container) return;
-
-    if (!searches || searches.length === 0) {
-        container.innerHTML = '<li class="empty-state">No recent searches yet</li>';
-        return;
-    }
-
-    container.innerHTML = searches.map(contact => `
-        <li>
-            <span class="contact-name">${escapeHtml(contact.name)}</span>
-            <span class="contact-phone">${escapeHtml(contact.phone)}</span>
-        </li>
-    `).join('');
-}
-
 function escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text ?? '';
     return div.innerHTML;
 }
 
@@ -70,6 +95,7 @@ function getCategoryTag(category) {
     return `<span class="category-tag ${category}">${category}</span>`;
 }
 
-function getInitials(name) {
-    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function formatDateTime(value) {
+    if (!value) return 'No searches yet';
+    return value;
 }
