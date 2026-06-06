@@ -197,6 +197,74 @@ body {
     flex: 1;
 }
 
+/* Hero card */
+.hero-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+}
+
+.hero-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+}
+
+.hero-card p {
+    color: var(--text-secondary);
+    max-width: 820px;
+}
+
+/* Performance metrics */
+.perf-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.perf-metric {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+}
+
+.perf-metric.highlight {
+    border-color: var(--accent);
+}
+
+.perf-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.perf-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.perf-value.small {
+    font-size: 1rem;
+}
+
+.perf-sub {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.generate-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
+
 /* Stats grid */
 .stats-grid {
     display: grid;

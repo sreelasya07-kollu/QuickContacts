@@ -1,24 +1,38 @@
 # ContactHub – Smart Contact Manager
 
-A full-stack contact management web application built with **Flask** (Python) and **HTML/CSS/JavaScript**. ContactHub demonstrates practical use of Python data structures — **List**, **Dictionary**, and **Queue (deque)** — while providing an efficient contact organization, search, and performance analysis system.
+A full-stack contact management web application built with **Flask** (Python) and **HTML/CSS/JavaScript**. ContactHub demonstrates practical applications of data structures by comparing contact lookup performance using Python **Lists** and **Dictionaries**.
 
-![ContactHub](https://img.shields.io/badge/Python-Flask-6366f1?style=flat-square)
-![Theme](https://img.shields.io/badge/UI-Dark%20Theme-1a1d27?style=flat-square)
+## Project Objective
+
+This project demonstrates practical applications of data structures by comparing contact lookup performance using Python Lists and Dictionaries. Users can manage contacts and visualize the impact of different search techniques through execution-time analysis and graphical reports.
 
 ---
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Home Dashboard** | Total contacts, favorites count, recent searches, category overview |
-| **Add Contact** | Name, phone, email, category (Family, Friends, Work, Emergency) |
-| **View Contacts** | Table view with edit, delete, and favorite toggle |
-| **Search** | Instant suggestions while typing; search by name or phone |
-| **Favorites** | Mark/unmark contacts; dedicated favorites page |
-| **Recent Searches** | Last 5 searches stored using Python `deque` (Queue) |
-| **Categories** | Filter by category; emergency contacts highlighted in red |
-| **Performance Analysis** | Compare List O(n) vs Dictionary O(1) lookup with Chart.js |
+### Contact Management
+- **Add Contact** – Name, phone, email
+- **View Contacts** – Table display from List storage
+- **Edit Contact** – Update existing records in both List and Dictionary
+- **Delete Contact** – Remove from both data structures
+- **Search Contact** – Search by name or phone with live performance comparison
+
+### Performance Analysis
+- **List Search** – Linear Search O(n) with comparison count
+- **Dictionary Search** – Hash Lookup O(1) using phone index
+- **Execution timing** – Measured with Python `time` module
+- **Generate Sample Data** – 100, 1000, 5000, or 10000 contacts
+- **Chart.js visualizations** – Bar chart and line chart
+- **Performance Report table** – Comparison across all data sizes
+
+---
+
+## Data Structures
+
+| Structure | Usage | Time Complexity |
+|-----------|-------|-----------------|
+| **Python List** | Sequential contact storage | Search: O(n) |
+| **Python Dictionary** | ID index + phone hash index | Lookup: O(1) |
 
 ---
 
@@ -26,91 +40,40 @@ A full-stack contact management web application built with **Flask** (Python) an
 
 ```
 quickcontacts/
-├── app.py                  # Flask backend & REST APIs
-├── requirements.txt        # Python dependencies
-├── README.md
+├── app.py
+├── requirements.txt
+├── run.sh
 ├── static/
-│   ├── css/
-│   │   └── style.css       # Dark theme responsive styles
+│   ├── css/style.css
 │   └── js/
-│       ├── main.js         # Shared utilities & sidebar
-│       ├── dashboard.js    # Dashboard stats
-│       ├── add.js          # Add contact form
-│       ├── contacts.js     # View/edit/delete contacts
-│       ├── search.js       # Search & suggestions
-│       ├── favorites.js    # Favorites page
-│       └── performance.js  # Chart.js benchmark
+│       ├── main.js
+│       ├── dashboard.js
+│       ├── add.js
+│       ├── contacts.js
+│       ├── search.js
+│       └── performance.js
 └── templates/
-    ├── base.html           # Layout with sidebar navigation
-    ├── index.html          # Dashboard
-    ├── add.html            # Add contact
-    ├── contacts.html       # View contacts
-    ├── search.html         # Search contacts
-    ├── favorites.html      # Favorites
-    └── performance.html    # Performance analysis
+    ├── base.html
+    ├── index.html
+    ├── add.html
+    ├── contacts.html
+    ├── search.html
+    └── performance.html
 ```
 
 ---
 
-## Data Structures Used
+## Installation
 
-### Python List
-Contacts are stored sequentially in `contacts_list`. Searching requires iterating through every contact.
-
-```
-Time Complexity: O(n) — Linear Search
-```
-
-### Python Dictionary
-Contacts are indexed by ID in `contacts_dict` for instant hash-based lookup.
-
-```
-Time Complexity: O(1) — Hash Lookup
+```bash
+cd quickcontacts
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
 ```
 
-### Python Queue (collections.deque)
-Recent searches are stored in a bounded queue with `maxlen=5`, automatically removing the oldest entry when full.
-
-```
-FIFO Queue — Last 5 searched contacts
-```
-
----
-
-## Installation & Setup
-
-### Prerequisites
-- Python 3.8 or higher
-- pip
-
-### Steps
-
-1. **Clone or navigate to the project folder:**
-   ```bash
-   cd quickcontacts
-   ```
-
-2. **Create a virtual environment (recommended):**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate        # macOS/Linux
-   venv\Scripts\activate           # Windows
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Run the application:**
-   ```bash
-   python app.py
-   ```
-
-5. **Open in browser:**
-   ```
-   http://127.0.0.1:5001
-   ```
+Open **http://127.0.0.1:5001**
 
 ---
 
@@ -118,57 +81,35 @@ FIFO Queue — Last 5 searched contacts
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/stats` | Dashboard statistics |
-| GET | `/api/contacts` | Get all contacts (optional `?category=`) |
-| POST | `/api/contacts` | Add a new contact |
-| PUT | `/api/contacts/<id>` | Update a contact |
-| DELETE | `/api/contacts/<id>` | Delete a contact |
-| POST | `/api/contacts/<id>/favorite` | Toggle favorite status |
-| GET | `/api/favorites` | Get favorite contacts |
-| GET | `/api/search?q=` | Search by name or phone |
-| GET | `/api/suggestions?q=` | Instant search suggestions |
-| GET | `/api/recent-searches` | Get recent search queue |
-| POST | `/api/recent-searches/<id>` | Add contact to recent searches |
-| GET | `/api/performance?q=` | Run lookup benchmark |
+| GET | `/api/stats` | Total contact count |
+| GET | `/api/contacts` | Get all contacts |
+| POST | `/api/contacts` | Add contact |
+| PUT | `/api/contacts/<id>` | Update contact |
+| DELETE | `/api/contacts/<id>` | Delete contact |
+| GET | `/api/search?q=` | Search with performance metrics |
+| GET | `/api/suggestions?q=` | Search suggestions |
+| POST | `/api/generate/<count>` | Generate sample data (100/1000/5000/10000) |
+| GET | `/api/performance/search?q=` | Run live search benchmark |
+| GET | `/api/performance/report` | Full performance report table |
 
 ---
 
-## Sample Contact Data
+## Performance Report
 
-The app loads 10 sample contacts on startup, including:
-
-- **Sree Lasya Kollu** — Family (Favorite)
-- **Siddu Kumar** — Friends (Favorite)
-- **Dr. Meera Singh** — Emergency (Favorite)
-- **Emergency Services** — Emergency (Favorite)
-- And 6 more contacts across all categories
-
----
-
-## Performance Analysis
-
-Navigate to **Performance Analysis** in the sidebar to:
-
-1. Enter a search query
-2. Click **Run Benchmark**
-3. View list vs dictionary search times (measured with Python `time.perf_counter()`)
-4. See results in a **Chart.js** bar graph
-5. Learn which data structure is faster
+| Data Size | List Search Time | Dictionary Search Time |
+|-----------|------------------|------------------------|
+| 100 | Measured (ms) | Measured (ms) |
+| 1000 | Measured (ms) | Measured (ms) |
+| 5000 | Measured (ms) | Measured (ms) |
+| 10000 | Measured (ms) | Measured (ms) |
 
 ---
 
 ## Technologies
 
 - **Backend:** Python, Flask
-- **Frontend:** HTML5, CSS3, JavaScript (ES6+)
+- **Frontend:** HTML5, CSS3, JavaScript
 - **Charts:** Chart.js 4.x
-- **Fonts:** Inter (Google Fonts)
-- **Data Structures:** List, Dictionary, Queue (deque)
+- **Timing:** Python `time.perf_counter()`
 
----
-
-## Authors
-
-Built as a data structures assignment demonstrating List, Dictionary, and Queue concepts in a real-world contact management application.
-
-**ContactHub** — Smart Contact Manager
+**ContactHub** – DSA Contact Manager

@@ -17,7 +17,7 @@
                     <span class="logo-icon">📇</span>
                     <div class="logo-text">
                         <span class="logo-name">ContactHub</span>
-                        <span class="logo-tagline">Smart Contact Manager</span>
+                        <span class="logo-tagline">DSA Contact Manager</span>
                     </div>
                 </div>
             </div>
@@ -38,18 +38,14 @@
                     <span class="nav-icon">🔍</span>
                     <span>Search</span>
                 </a>
-                <a href="{{ url_for('favorites_page') }}" class="nav-item {% if active == 'favorites' %}active{% endif %}">
-                    <span class="nav-icon">⭐</span>
-                    <span>Favorites</span>
-                </a>
                 <a href="{{ url_for('performance_page') }}" class="nav-item {% if active == 'performance' %}active{% endif %}">
                     <span class="nav-icon">📊</span>
-                    <span>Performance</span>
+                    <span>Performance Analysis</span>
                 </a>
             </nav>
             <div class="sidebar-footer">
                 <p>Data Structures Demo</p>
-                <small>List · Dict · Queue</small>
+                <small>List · Dictionary</small>
             </div>
         </aside>
 

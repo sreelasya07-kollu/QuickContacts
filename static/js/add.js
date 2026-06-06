@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('name').value.trim(),
             phone: document.getElementById('phone').value.trim(),
             email: document.getElementById('email').value.trim(),
-            category: document.getElementById('category').value,
-            favorite: document.getElementById('favorite').checked,
         };
 
         try {
@@ -20,10 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showToast('Contact added successfully!');
             form.reset();
-
-            setTimeout(() => {
-                window.location.href = '/contacts';
-            }, 1000);
+            setTimeout(() => { window.location.href = '/contacts'; }, 800);
         } catch (err) {
             showToast(err.message, 'error');
         }

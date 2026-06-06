@@ -4,6 +4,16 @@
 {% block page_title %}Home Dashboard{% endblock %}
 
 {% block content %}
+<section class="hero-card animate-in">
+    <h2>ContactHub – Smart Contact Manager</h2>
+    <p>
+        This project demonstrates practical applications of data structures by comparing contact lookup
+        performance using Python <strong>Lists</strong> and <strong>Dictionaries</strong>. Manage contacts
+        and visualize the impact of different search techniques through execution-time analysis and
+        graphical reports.
+    </p>
+</section>
+
 <section class="stats-grid">
     <div class="stat-card animate-in" style="--delay: 0">
         <div class="stat-icon blue">👥</div>
@@ -13,60 +23,30 @@
         </div>
     </div>
     <div class="stat-card animate-in" style="--delay: 1">
-        <div class="stat-icon gold">⭐</div>
+        <div class="stat-icon green">📋</div>
         <div class="stat-info">
-            <span class="stat-label">Favorite Contacts</span>
-            <span class="stat-value" id="favoriteContacts">0</span>
+            <span class="stat-label">List Storage</span>
+            <span class="stat-value small">Linear Search O(n)</span>
         </div>
     </div>
     <div class="stat-card animate-in" style="--delay: 2">
-        <div class="stat-icon purple">🔍</div>
+        <div class="stat-icon purple">🗂️</div>
         <div class="stat-info">
-            <span class="stat-label">Recent Searches</span>
-            <span class="stat-value" id="recentSearchCount">0</span>
-        </div>
-    </div>
-    <div class="stat-card animate-in" style="--delay: 3">
-        <div class="stat-icon red">🚨</div>
-        <div class="stat-info">
-            <span class="stat-label">Emergency Contacts</span>
-            <span class="stat-value" id="emergencyContacts">0</span>
+            <span class="stat-label">Dictionary Storage</span>
+            <span class="stat-value small">Hash Lookup O(1)</span>
         </div>
     </div>
 </section>
 
-<section class="dashboard-grid">
-    <div class="card animate-in" style="--delay: 4">
-        <div class="card-header">
-            <h2>Recent Searches</h2>
-            <span class="badge">Queue (max 5)</span>
-        </div>
-        <div class="card-body">
-            <ul class="recent-list" id="recentSearchesList">
-                <li class="empty-state">No recent searches yet</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="card animate-in" style="--delay: 5">
-        <div class="card-header">
-            <h2>Categories Overview</h2>
-        </div>
-        <div class="card-body">
-            <div class="category-bars" id="categoryBars"></div>
-        </div>
-    </div>
-</section>
-
-<section class="card animate-in" style="--delay: 6">
+<section class="card animate-in" style="--delay: 3">
     <div class="card-header">
         <h2>Quick Actions</h2>
     </div>
     <div class="card-body">
         <div class="quick-actions">
-            <a href="{{ url_for('add_contact_page') }}" class="action-btn primary">➕ Add New Contact</a>
-            <a href="{{ url_for('search_page') }}" class="action-btn secondary">🔍 Search Contacts</a>
-            <a href="{{ url_for('favorites_page') }}" class="action-btn secondary">⭐ View Favorites</a>
+            <a href="{{ url_for('add_contact_page') }}" class="action-btn primary">➕ Add Contact</a>
+            <a href="{{ url_for('contacts_page') }}" class="action-btn secondary">👥 View Contacts</a>
+            <a href="{{ url_for('search_page') }}" class="action-btn secondary">🔍 Search Contact</a>
             <a href="{{ url_for('performance_page') }}" class="action-btn accent">📊 Performance Analysis</a>
         </div>
     </div>

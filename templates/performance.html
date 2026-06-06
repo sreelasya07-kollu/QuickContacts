@@ -10,31 +10,46 @@
 {% block content %}
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Contact Lookup Comparison</h2>
-        <span class="badge">List vs Dictionary</span>
+        <h2>Generate Sample Data</h2>
+        <span class="badge">For Benchmarking</span>
     </div>
     <div class="card-body">
         <p class="section-desc">
-            Compare contact lookup performance using Python <strong>List</strong> (Linear Search - O(n))
-            vs <strong>Dictionary</strong> (Hash Lookup - O(1)). Timing measured with Python's <code>time</code> module.
+            Generate contacts to compare List (Linear Search - O(n)) vs Dictionary (Hash Lookup - O(1)).
+            Timing is measured using Python's <code>time</code> module.
         </p>
+        <div class="generate-actions">
+            <button class="btn primary" data-size="100">Generate 100</button>
+            <button class="btn primary" data-size="1000">Generate 1000</button>
+            <button class="btn primary" data-size="5000">Generate 5000</button>
+            <button class="btn primary" data-size="10000">Generate 10000</button>
+        </div>
+        <p class="contact-count" id="currentDataSize">Current contacts: 0</p>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Live Search Benchmark</h2>
+    </div>
+    <div class="card-body">
         <div class="performance-controls">
             <div class="form-group">
-                <label for="perfQuery">Search Query</label>
-                <input type="text" id="perfQuery" placeholder="Enter search term (e.g. name or phone)" value="a">
+                <label for="perfQuery">Phone Number to Search</label>
+                <input type="text" id="perfQuery" placeholder="Enter exact phone number">
             </div>
-            <button class="btn primary" id="runBenchmark">Run Benchmark</button>
+            <button class="btn primary" id="runBenchmark">Run Search Benchmark</button>
         </div>
     </div>
 </section>
 
-<section class="stats-grid animate-in">
+<section class="stats-grid animate-in" id="benchmarkStats" style="display: none;">
     <div class="stat-card">
         <div class="stat-icon blue">📋</div>
         <div class="stat-info">
             <span class="stat-label">List Search Time</span>
             <span class="stat-value" id="listTime">— ms</span>
-            <span class="stat-sub">O(n) Linear Search</span>
+            <span class="stat-sub">O(n) · <span id="listComparisons">0</span> comparisons</span>
         </div>
     </div>
     <div class="stat-card">
@@ -42,31 +57,56 @@
         <div class="stat-info">
             <span class="stat-label">Dictionary Search Time</span>
             <span class="stat-value" id="dictTime">— ms</span>
-            <span class="stat-sub">O(1) Hash Lookup</span>
+            <span class="stat-sub">O(1) · <span id="dictComparisons">0</span> comparisons</span>
         </div>
     </div>
     <div class="stat-card highlight">
         <div class="stat-icon gold">🏆</div>
         <div class="stat-info">
             <span class="stat-label">Faster Method</span>
-            <span class="stat-value small" id="fasterMethod">Run benchmark</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon purple">👥</div>
-        <div class="stat-info">
-            <span class="stat-label">Total Contacts</span>
-            <span class="stat-value" id="totalForPerf">0</span>
+            <span class="stat-value small" id="fasterMethod">—</span>
         </div>
     </div>
 </section>
 
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Execution Time Comparison</h2>
+        <h2>Bar Chart – Search Time Comparison</h2>
     </div>
     <div class="card-body chart-container">
-        <canvas id="performanceChart"></canvas>
+        <canvas id="barChart"></canvas>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Line Chart – Performance vs Data Size</h2>
+    </div>
+    <div class="card-body chart-container">
+        <canvas id="lineChart"></canvas>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Performance Report</h2>
+    </div>
+    <div class="card-body table-wrapper">
+        <table class="contacts-table" id="reportTable">
+            <thead>
+                <tr>
+                    <th>Data Size</th>
+                    <th>List Search Time (ms)</th>
+                    <th>Dictionary Search Time (ms)</th>
+                    <th>List Comparisons</th>
+                    <th>Dict Comparisons</th>
+                    <th>Faster Method</th>
+                </tr>
+            </thead>
+            <tbody id="reportBody">
+                <tr><td colspan="6" class="empty-state">Loading performance report...</td></tr>
+            </tbody>
+        </table>
     </div>
 </section>
 
@@ -78,18 +118,13 @@
         <div class="info-grid">
             <div class="info-card">
                 <h3>📋 Python List</h3>
-                <p>Stores contacts sequentially. Search requires iterating through every contact until a match is found.</p>
+                <p>Contacts stored sequentially. Searching requires checking each contact one by one until a match is found.</p>
                 <span class="complexity">Time Complexity: O(n)</span>
             </div>
             <div class="info-card">
                 <h3>🗂️ Python Dictionary</h3>
-                <p>Stores contacts with hash keys for instant access. Lookup by key is nearly constant time.</p>
+                <p>Contacts indexed by phone number using hash keys. Direct lookup without scanning all contacts.</p>
                 <span class="complexity">Time Complexity: O(1)</span>
-            </div>
-            <div class="info-card">
-                <h3>🔄 Python Queue (deque)</h3>
-                <p>Stores the last 5 searched contacts in FIFO order. Used for recent search history.</p>
-                <span class="complexity">Max Size: 5 items</span>
             </div>
         </div>
     </div>

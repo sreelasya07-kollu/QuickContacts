@@ -11,7 +11,17 @@
             <input type="text" id="searchInput" placeholder="Search by name or phone number..." autocomplete="off">
             <ul class="suggestions-list" id="suggestionsList"></ul>
         </div>
-        <p class="search-hint">Start typing for instant search suggestions</p>
+        <p class="search-hint">Search runs List (Linear Search) and Dictionary (Hash Lookup) with timing comparison</p>
+    </div>
+</section>
+
+<section class="card animate-in" id="performanceSection" style="display: none;">
+    <div class="card-header">
+        <h2>Search Performance Analysis</h2>
+        <span class="badge">List vs Dictionary</span>
+    </div>
+    <div class="card-body">
+        <div class="perf-metrics-grid" id="searchPerfMetrics"></div>
     </div>
 </section>
 
@@ -22,18 +32,6 @@
     </div>
     <div class="card-body">
         <div class="search-results" id="searchResults"></div>
-    </div>
-</section>
-
-<section class="card animate-in">
-    <div class="card-header">
-        <h2>Recent Searches</h2>
-        <span class="badge">Queue (Last 5)</span>
-    </div>
-    <div class="card-body">
-        <ul class="recent-list" id="recentSearchesList">
-            <li class="empty-state">No recent searches yet</li>
-        </ul>
     </div>
 </section>
 {% endblock %}

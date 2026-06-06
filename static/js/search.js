@@ -1,8 +1,6 @@
 let debounceTimer;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadRecentSearches();
-
     const searchInput = document.getElementById('searchInput');
     const suggestionsList = document.getElementById('suggestionsList');
 
@@ -14,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             suggestionsList.classList.remove('active');
             suggestionsList.innerHTML = '';
             document.getElementById('searchResultsSection').style.display = 'none';
+            document.getElementById('performanceSection').style.display = 'none';
             return;
         }
 
@@ -44,18 +43,19 @@ async function fetchSuggestions(query) {
         }
 
         suggestionsList.innerHTML = suggestions.map(s => `
-            <li data-id="${s.id}" data-name="${escapeHtml(s.name)}">
+            <li data-id="${s.id}" data-name="${escapeHtml(s.name)}" data-phone="${escapeHtml(s.phone)}">
                 <span>
                     <span class="suggestion-name">${escapeHtml(s.name)}</span>
                     <span class="suggestion-phone">${escapeHtml(s.phone)}</span>
                 </span>
-                ${getCategoryTag(s.category)}
             </li>
         `).join('');
 
         suggestionsList.querySelectorAll('li').forEach(li => {
             li.addEventListener('click', () => {
-                selectSuggestion(Number(li.dataset.id), li.dataset.name);
+                document.getElementById('searchInput').value = li.dataset.phone;
+                suggestionsList.classList.remove('active');
+                performSearch(li.dataset.phone);
             });
         });
 
@@ -65,26 +65,13 @@ async function fetchSuggestions(query) {
     }
 }
 
-function selectSuggestion(id, name) {
-    document.getElementById('searchInput').value = name;
-    document.getElementById('suggestionsList').classList.remove('active');
-    performSearch(name, id);
-}
-
-async function performSearch(query, contactId = null) {
+async function performSearch(query) {
     if (!query) return;
 
     try {
-        const results = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
-        renderSearchResults(results);
-
-        if (contactId) {
-            await apiFetch(`/api/recent-searches/${contactId}`, { method: 'POST' });
-        } else if (results.length > 0) {
-            await apiFetch(`/api/recent-searches/${results[0].id}`, { method: 'POST' });
-        }
-
-        loadRecentSearches();
+        const data = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
+        renderSearchResults(data.results);
+        renderPerformanceMetrics(data.performance);
     } catch (err) {
         showToast(err.message, 'error');
     }
@@ -104,35 +91,39 @@ function renderSearchResults(results) {
     }
 
     container.innerHTML = results.map(contact => `
-        <div class="contact-card ${contact.category === 'Emergency' ? 'emergency' : ''}">
+        <div class="contact-card">
             <h3>${escapeHtml(contact.name)}</h3>
             <p>📞 ${escapeHtml(contact.phone)}</p>
             <p>✉️ ${escapeHtml(contact.email)}</p>
-            <div class="card-footer">
-                ${getCategoryTag(contact.category)}
-                <button class="btn icon-btn small ${contact.favorite ? 'active' : ''}"
-                        onclick="toggleSearchFavorite(${contact.id})">
-                    ${contact.favorite ? '⭐' : '☆'}
-                </button>
-            </div>
         </div>
     `).join('');
 }
 
-async function toggleSearchFavorite(id) {
-    try {
-        await apiFetch(`/api/contacts/${id}/favorite`, { method: 'POST' });
-        performSearch(document.getElementById('searchInput').value.trim());
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
+function renderPerformanceMetrics(performance) {
+    if (!performance) return;
 
-async function loadRecentSearches() {
-    try {
-        const searches = await apiFetch('/api/recent-searches');
-        renderRecentSearches(document.getElementById('recentSearchesList'), searches);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
+    const section = document.getElementById('performanceSection');
+    const container = document.getElementById('searchPerfMetrics');
+
+    section.style.display = 'block';
+    container.innerHTML = `
+        <div class="perf-metric">
+            <span class="perf-label">List Search Time</span>
+            <span class="perf-value">${performance.list_time_ms} ms</span>
+            <span class="perf-sub">O(n) · ${performance.list_comparisons} comparisons</span>
+        </div>
+        <div class="perf-metric">
+            <span class="perf-label">Dictionary Search Time</span>
+            <span class="perf-value">${performance.dict_time_ms} ms</span>
+            <span class="perf-sub">O(1) · ${performance.dict_comparisons} comparisons</span>
+        </div>
+        <div class="perf-metric highlight">
+            <span class="perf-label">Faster Method</span>
+            <span class="perf-value small">${escapeHtml(performance.faster)}</span>
+        </div>
+        <div class="perf-metric">
+            <span class="perf-label">Total Contacts</span>
+            <span class="perf-value">${performance.total_contacts}</span>
+        </div>
+    `;
 }
