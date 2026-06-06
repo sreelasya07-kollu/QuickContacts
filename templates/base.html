@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ContactHub{% endblock %} | Smart Contact Manager</title>
+    <script>
+        (function () {
+            const theme = localStorage.getItem('contacthub-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -49,7 +55,7 @@
             </nav>
             <div class="sidebar-footer">
                 <p>Data Structures Demo</p>
-                <small>List · Dict · Queue</small>
+                <small>List · Dictionary</small>
             </div>
         </aside>
 
@@ -58,6 +64,11 @@
                 <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
                 <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 <div class="topbar-actions">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <span class="theme-icon theme-icon-dark">🌙</span>
+                        <span class="theme-icon theme-icon-light">☀️</span>
+                        <span class="theme-label">Theme</span>
+                    </button>
                     <span class="status-badge">● Online</span>
                 </div>
             </header>

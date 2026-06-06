@@ -1,5 +1,7 @@
 from collections import deque
-from flask import Flask, render_template, request, jsonify
+from datetime import datetime
+
+from flask import Flask, jsonify, render_template, request
 import time
 
 app = Flask(__name__)
@@ -7,8 +9,20 @@ app = Flask(__name__)
 # Data structures
 contacts_list = []
 contacts_dict = {}
+phone_index = {}
 recent_searches = deque(maxlen=5)
 next_id = 1
+
+last_search = {
+    "query": "",
+    "contact_name": "",
+    "contact_phone": "",
+    "searched_at": "",
+    "list_time_ms": 0,
+    "dict_time_ms": 0,
+    "list_comparisons": 0,
+    "dict_comparisons": 0,
+}
 
 CATEGORIES = ["Family", "Friends", "Work", "Emergency"]
 
@@ -50,6 +64,7 @@ def add_contact_to_storage(name, phone, email, category, favorite=False):
     }
     contacts_list.append(contact)
     contacts_dict[next_id] = contact
+    phone_index[contact["phone"]] = contact
     next_id += 1
     return contact
 
@@ -57,6 +72,7 @@ def add_contact_to_storage(name, phone, email, category, favorite=False):
 def remove_contact_from_storage(contact_id):
     contact = contacts_dict.pop(contact_id, None)
     if contact:
+        phone_index.pop(contact["phone"], None)
         contacts_list[:] = [c for c in contacts_list if c["id"] != contact_id]
     return contact
 
@@ -65,12 +81,19 @@ def update_contact_in_storage(contact_id, data):
     contact = contacts_dict.get(contact_id)
     if not contact:
         return None
+
+    old_phone = contact["phone"]
     contact["name"] = data.get("name", contact["name"])
     contact["phone"] = data.get("phone", contact["phone"])
     contact["email"] = data.get("email", contact["email"])
     contact["category"] = data.get("category", contact["category"])
     if "favorite" in data:
         contact["favorite"] = data["favorite"]
+
+    if old_phone != contact["phone"]:
+        phone_index.pop(old_phone, None)
+        phone_index[contact["phone"]] = contact
+
     for i, c in enumerate(contacts_list):
         if c["id"] == contact_id:
             contacts_list[i] = contact
@@ -79,12 +102,51 @@ def update_contact_in_storage(contact_id, data):
 
 
 def search_list(query):
-    query = query.lower()
+    query_lower = query.lower()
     results = []
+    comparisons = 0
     for contact in contacts_list:
-        if query in contact["name"].lower() or query in contact["phone"]:
+        comparisons += 1
+        if query_lower in contact["name"].lower() or query in contact["phone"]:
             results.append(contact)
-    return results
+    return results, comparisons
+
+
+def search_dict_by_phone(phone):
+    comparisons = 1
+    contact = phone_index.get(phone)
+    results = [contact] if contact else []
+    return results, comparisons
+
+
+def measure_search_performance(query):
+    list_start = time.perf_counter()
+    list_results, list_comparisons = search_list(query)
+    list_time = time.perf_counter() - list_start
+
+    phone_target = query
+    if phone_target not in phone_index and list_results:
+        phone_target = list_results[0]["phone"]
+
+    dict_start = time.perf_counter()
+    dict_results, dict_comparisons = search_dict_by_phone(phone_target)
+    dict_time = time.perf_counter() - dict_start
+
+    faster = "Dictionary (O(1))" if dict_time <= list_time else "List (O(n))"
+
+    return {
+        "query": query,
+        "list_time_ms": round(list_time * 1000, 4),
+        "dict_time_ms": round(dict_time * 1000, 4),
+        "list_comparisons": list_comparisons,
+        "dict_comparisons": dict_comparisons,
+        "list_complexity": "O(n)",
+        "dict_complexity": "O(1)",
+        "faster": faster,
+        "list_matches": len(list_results),
+        "dict_matches": len(dict_results),
+        "total_contacts": len(contacts_list),
+    }
 
 
 def find_contacts_in_dict(query):
@@ -119,7 +181,7 @@ def measure_performance(query):
 
     list_start = time.perf_counter()
     for _ in range(iterations):
-        search_list(query)
+        search_list(query)[0]
     list_time = (time.perf_counter() - list_start) / iterations
 
     dict_start = time.perf_counter()
@@ -196,6 +258,7 @@ def api_stats():
         "favorite_contacts": favorites_count,
         "recent_searches": list(recent_searches),
         "category_counts": category_counts,
+        "last_search": last_search,
     })
 
 
@@ -273,14 +336,39 @@ def api_favorites():
 
 @app.route("/api/search")
 def api_search():
+    global last_search
     query = request.args.get("q", "").strip()
     if not query:
-        return jsonify([])
+        return jsonify({"results": [], "performance": None})
 
-    results = search_list(query)
+    performance = measure_search_performance(query)
+    results, _ = search_list(query)
+
     if results:
         add_to_recent_searches(results[0])
-    return jsonify(results)
+        last_search = {
+            "query": query,
+            "contact_name": results[0]["name"],
+            "contact_phone": results[0]["phone"],
+            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "list_time_ms": performance["list_time_ms"],
+            "dict_time_ms": performance["dict_time_ms"],
+            "list_comparisons": performance["list_comparisons"],
+            "dict_comparisons": performance["dict_comparisons"],
+        }
+    else:
+        last_search = {
+            "query": query,
+            "contact_name": "No match found",
+            "contact_phone": "—",
+            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "list_time_ms": performance["list_time_ms"],
+            "dict_time_ms": performance["dict_time_ms"],
+            "list_comparisons": performance["list_comparisons"],
+            "dict_comparisons": performance["dict_comparisons"],
+        }
+
+    return jsonify({"results": results, "performance": performance})
 
 
 @app.route("/api/suggestions")
