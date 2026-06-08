@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Sorting Speed Analyzer{% endblock %}
+{% block page_title %}Sorting Speed Analyzer{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-card animate-in">
+    <h2>Sorting Speed Analyzer</h2>
+    <p>Compare Bubble Sort and Merge Sort using real execution times measured in Python. See why algorithm choice matters as your array grows.</p>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Enter Your Array</h2>
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label for="arrayInput">Numbers separated by commas</label>
+            <textarea id="arrayInput" rows="3" placeholder="23, 11, 45, 6, 90, 12"></textarea>
+            <p class="input-hint">Example: 23, 11, 45, 6, 90, 12</p>
+        </div>
+        <div class="sort-actions">
+            <button type="button" class="btn primary" id="compareSortsBtn">Compare Sorts</button>
+            <button type="button" class="btn secondary" id="clearSortsBtn">Clear</button>
+        </div>
+        <div class="generate-actions sort-generate">
+            <button class="btn primary" data-size="100">Generate 100 Random Numbers</button>
+            <button class="btn primary" data-size="500">Generate 500 Random Numbers</button>
+            <button class="btn primary" data-size="1000">Generate 1000 Random Numbers</button>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in hidden-section" id="arrayInfoSection">
+    <div class="card-header">
+        <h2>Array Details</h2>
+    </div>
+    <div class="card-body">
+        <div class="array-info-grid">
+            <div class="array-info-item">
+                <span class="array-info-label">Array Size</span>
+                <span class="array-info-value" id="arraySizeValue">0</span>
+            </div>
+            <div class="array-info-item full-width">
+                <span class="array-info-label">Original Array</span>
+                <p class="array-display" id="originalArrayDisplay">—</p>
+            </div>
+            <div class="array-info-item full-width">
+                <span class="array-info-label">Sorted Array</span>
+                <p class="array-display sorted" id="sortedArrayDisplay">—</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in hidden-section" id="sortResultsSection">
+    <div class="card-header">
+        <h2>Bubble Sort vs Merge Sort</h2>
+        <span class="badge badge-soft">Comparison Results</span>
+    </div>
+    <div class="card-body">
+        <div class="search-method-grid" id="sortMethodGrid"></div>
+
+        <div class="winner-card" id="sortWinnerCard"></div>
+    </div>
+</section>
+
+<section class="card animate-in" id="sortChartSection">
+    <div class="card-header">
+        <h2>Execution Time Comparison</h2>
+    </div>
+    <div class="card-body chart-container chart-animate">
+        <p class="chart-placeholder" id="sortChartPlaceholder">Click Compare Sorts to view the execution time graph.</p>
+        <canvas id="sortChart" class="hidden-section"></canvas>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>How Sorting Works</h2>
+    </div>
+    <div class="card-body">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>🫧 Bubble Sort</h3>
+                <p>Repeatedly compares adjacent elements.</p>
+                <p>Easy to understand and implement.</p>
+                <p class="info-best-for"><strong>Best for:</strong> Learning algorithm basics.</p>
+            </div>
+            <div class="info-card highlight-card">
+                <h3>🔀 Merge Sort</h3>
+                <p>Uses a divide-and-conquer approach.</p>
+                <p>Efficient for large datasets.</p>
+                <p class="info-best-for"><strong>Best for:</strong> Large arrays — performs significantly better than Bubble Sort as input size increases.</p>
+            </div>
+            <div class="info-card">
+                <h3>💡 Why Compare Them?</h3>
+                <p>Bubble Sort has O(n²) time complexity while Merge Sort has O(n log n).</p>
+                <p>As the array grows, Merge Sort stays much faster — you can see the difference in the execution times above.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/sorting.js') }}"></script>
+{% endblock %}

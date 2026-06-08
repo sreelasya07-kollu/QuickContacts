@@ -60,6 +60,33 @@ function getCategoryTag(category) {
     return `<span class="category-tag ${category}">${escapeHtml(category)}</span>`;
 }
 
+function getPerformanceTimes(perf) {
+    if (!perf) return { normalMs: null, smartMs: null };
+
+    return {
+        normalMs: perf.normal_search_time_ms
+            ?? perf.list_search_time
+            ?? perf.list_time_ms
+            ?? perf.time_taken
+            ?? perf.execution_time?.normal_search_ms,
+        smartMs: perf.smart_search_time_ms
+            ?? perf.dictionary_search_time
+            ?? perf.dict_time_ms
+            ?? perf.execution_time?.smart_search_ms,
+    };
+}
+
+function formatSearchTime(ms) {
+    const value = Number(ms);
+    if (!Number.isFinite(value)) return '—';
+
+    if (value === 0) return '0 ms';
+    if (value < 0.01) return `${(value * 1000).toFixed(2)} μs`;
+    if (value < 1) return `${value.toFixed(4)} ms`;
+    if (value < 100) return `${value.toFixed(2)} ms`;
+    return `${value.toFixed(1)} ms`;
+}
+
 function emptyState(icon, title, message, actionHtml = '') {
     return `
         <div class="empty-state-box">

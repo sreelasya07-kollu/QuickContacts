@@ -139,12 +139,22 @@ function renderSearchResults(results) {
 function renderPerformanceMetrics(perf) {
     if (!perf) return;
 
+    const { normalMs, smartMs } = getPerformanceTimes(perf);
+    const normalTime = formatSearchTime(normalMs);
+    const smartTime = formatSearchTime(smartMs);
+    const chartNormal = Number(normalMs) || 0;
+    const chartSmart = Number(smartMs) || 0;
+
     document.getElementById('performanceSection').classList.remove('hidden-section');
 
     document.getElementById('searchComparisonCards').innerHTML = `
         <div class="compare-card">
             <h4>Normal Search</h4>
             <p class="compare-desc">Checks contacts one by one</p>
+            <div class="compare-stat">
+                <span class="compare-stat-label">Execution Time</span>
+                <span class="compare-stat-value time-highlight">${normalTime}</span>
+            </div>
             <div class="compare-stat">
                 <span class="compare-stat-label">Contacts Checked</span>
                 <span class="compare-stat-value">${perf.contacts_checked}</span>
@@ -154,6 +164,10 @@ function renderPerformanceMetrics(perf) {
             <h4>Smart Search</h4>
             <p class="compare-desc">Fast instant lookup</p>
             <div class="compare-stat">
+                <span class="compare-stat-label">Execution Time</span>
+                <span class="compare-stat-value time-highlight">${smartTime}</span>
+            </div>
+            <div class="compare-stat">
                 <span class="compare-stat-label">Lookups Performed</span>
                 <span class="compare-stat-value">${perf.lookups_performed}</span>
             </div>
@@ -161,14 +175,15 @@ function renderPerformanceMetrics(perf) {
     `;
 
     document.getElementById('timingResults').innerHTML = `
+        <h3 class="timing-heading">Execution Time Comparison</h3>
         <div class="timing-row">
             <div class="timing-item">
                 <span>Normal Search</span>
-                <strong>${perf.normal_search_time_ms} ms</strong>
+                <strong>${normalTime}</strong>
             </div>
             <div class="timing-item highlight">
                 <span>Smart Search</span>
-                <strong>${perf.smart_search_time_ms} ms</strong>
+                <strong>${smartTime}</strong>
             </div>
             <div class="timing-item winner-badge">
                 <span>Best Search Method</span>
@@ -177,10 +192,10 @@ function renderPerformanceMetrics(perf) {
         </div>
     `;
 
-    renderSearchChart(perf);
+    renderSearchChart(chartNormal, chartSmart);
 }
 
-function renderSearchChart(perf) {
+function renderSearchChart(normalMs, smartMs) {
     const canvas = document.getElementById('searchPerfChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
@@ -191,8 +206,8 @@ function renderSearchChart(perf) {
         data: {
             labels: ['Normal Search', 'Smart Search'],
             datasets: [{
-                label: 'Time (ms)',
-                data: [perf.normal_search_time_ms, perf.smart_search_time_ms],
+                label: 'Execution Time (ms)',
+                data: [normalMs, smartMs],
                 backgroundColor: ['rgba(59, 130, 246, 0.75)', 'rgba(34, 197, 94, 0.75)'],
                 borderRadius: 10,
             }],

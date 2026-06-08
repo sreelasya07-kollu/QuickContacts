@@ -1,25 +1,87 @@
 {% extends "base.html" %}
 
-{% block title %}Search Speed{% endblock %}
-{% block page_title %}Search Speed{% endblock %}
+{% block title %}Search Speed Comparison{% endblock %}
+{% block page_title %}Search Speed Comparison{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 {% endblock %}
 
 {% block content %}
+<section class="hero-card animate-in">
+    <h2>Search Speed Comparison</h2>
+    <p>This page compares two ways of finding contacts and shows which method works better as the contact list grows.</p>
+</section>
+
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Try With More Contacts</h2>
+        <h2>How Fast Can We Find a Contact?</h2>
+    </div>
+    <div class="card-body">
+        <div class="search-toolbar">
+            <div class="search-box">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input type="text" id="perfQuery" placeholder="Enter contact name to compare search speed" autocomplete="off">
+                <button type="button" class="search-clear-btn" id="clearPerfInput" aria-label="Clear search">✕</button>
+                <ul class="suggestions-list" id="perfSuggestions"></ul>
+            </div>
+            <div class="search-actions">
+                <button type="button" class="btn primary" id="runBenchmark">Compare Search</button>
+                <button type="button" class="btn secondary" id="clearBenchmark">Clear Search</button>
+            </div>
+        </div>
+        <p class="no-contacts-msg hidden-section" id="noContactsMsg">
+            No contacts available. Add contacts or generate sample contacts to compare search speed.
+        </p>
+    </div>
+</section>
+
+<section class="card animate-in hidden-section" id="resultsSection">
+    <div class="card-header">
+        <h2>Normal Search vs Smart Search</h2>
+        <span class="badge badge-soft">Comparison Results</span>
+    </div>
+    <div class="card-body">
+        <div class="stat-card inline-stat" id="totalContactsCard">
+            <div class="stat-icon purple">👥</div>
+            <div class="stat-info">
+                <span class="stat-label">Total Contacts</span>
+                <span class="stat-value" id="totalContactsValue">0</span>
+            </div>
+        </div>
+
+        <div class="search-method-grid" id="searchMethodGrid"></div>
+
+        <div class="contacts-checked-card" id="contactsCheckedCard">
+            <h3>Contacts Checked</h3>
+            <div id="contactsCheckedBanner"></div>
+        </div>
+
+        <div class="winner-card" id="winnerCard"></div>
+    </div>
+</section>
+
+<section class="card animate-in" id="barChartSection">
+    <div class="card-header">
+        <h2>Search Speed Comparison</h2>
+    </div>
+    <div class="card-body chart-container chart-animate">
+        <p class="chart-placeholder" id="barChartPlaceholder">Run a search comparison to view results.</p>
+        <canvas id="barChart" class="hidden-section"></canvas>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Grow Your Contact List</h2>
         <span class="badge badge-soft">Optional</span>
     </div>
     <div class="card-body">
-        <p class="section-desc">Add sample contacts to see how search speed changes as your contact list grows.</p>
+        <p class="section-desc">Generate sample contacts to see how search speed changes as your list gets bigger.</p>
         <div class="generate-actions">
-            <button class="btn primary" data-size="100">Add 100 Contacts</button>
-            <button class="btn primary" data-size="1000">Add 1000 Contacts</button>
-            <button class="btn primary" data-size="5000">Add 5000 Contacts</button>
-            <button class="btn primary" data-size="10000">Add 10000 Contacts</button>
+            <button class="btn primary" data-size="100">Generate 100 Contacts</button>
+            <button class="btn primary" data-size="1000">Generate 1000 Contacts</button>
+            <button class="btn primary" data-size="5000">Generate 5000 Contacts</button>
         </div>
         <p class="contact-count" id="currentDataSize">Current contacts: 0</p>
     </div>
@@ -27,61 +89,7 @@
 
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Compare Search Speed</h2>
-    </div>
-    <div class="card-body">
-        <div class="performance-controls">
-            <div class="form-group">
-                <label for="perfQuery">Search by name or phone</label>
-                <input type="text" id="perfQuery" placeholder="Enter a contact name or phone number">
-            </div>
-            <button class="btn primary" id="runBenchmark">Compare Search</button>
-            <button class="btn secondary" id="clearBenchmark">Clear</button>
-        </div>
-    </div>
-</section>
-
-<section class="comparison-grid hidden-section" id="benchmarkComparison"></section>
-<section class="timing-results hidden-section" id="benchmarkTiming"></section>
-
-<section class="stats-grid animate-in hidden-section" id="benchmarkStats">
-    <div class="stat-card">
-        <div class="stat-icon blue">📋</div>
-        <div class="stat-info">
-            <span class="stat-label">Normal Search</span>
-            <span class="stat-value" id="listTime">— ms</span>
-            <span class="stat-sub"><span id="listComparisons">0</span> contacts checked</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">⚡</div>
-        <div class="stat-info">
-            <span class="stat-label">Smart Search</span>
-            <span class="stat-value" id="dictTime">— ms</span>
-            <span class="stat-sub"><span id="dictComparisons">0</span> lookups performed</span>
-        </div>
-    </div>
-    <div class="stat-card highlight">
-        <div class="stat-icon gold">🏆</div>
-        <div class="stat-info">
-            <span class="stat-label">Best Search Method</span>
-            <span class="stat-value small" id="fasterMethod">—</span>
-        </div>
-    </div>
-</section>
-
-<section class="card animate-in hidden-section" id="barChartSection">
-    <div class="card-header">
-        <h2>Search Speed Comparison</h2>
-    </div>
-    <div class="card-body chart-container">
-        <canvas id="barChart"></canvas>
-    </div>
-</section>
-
-<section class="card animate-in" id="lineChartSection">
-    <div class="card-header">
-        <h2>Search Speed vs Contact List Size</h2>
+        <h2>Search Speed vs List Size</h2>
     </div>
     <div class="card-body chart-container">
         <canvas id="lineChart"></canvas>
@@ -93,12 +101,12 @@
         <h2>Speed Report</h2>
     </div>
     <div class="card-body table-wrapper">
-        <table class="contacts-table" id="reportTable">
+        <table class="contacts-table">
             <thead>
                 <tr>
                     <th>Contacts</th>
-                    <th>Normal Search (ms)</th>
-                    <th>Smart Search (ms)</th>
+                    <th>Normal Search</th>
+                    <th>Smart Search</th>
                     <th>Contacts Checked</th>
                     <th>Lookups</th>
                     <th>Best Method</th>
@@ -118,16 +126,19 @@
     <div class="card-body">
         <div class="info-grid">
             <div class="info-card">
-                <h3>Normal Search</h3>
-                <p>Checks contacts one by one until a match is found.</p>
+                <h3>🔍 Normal Search</h3>
+                <p>Checks contacts one by one until it finds a match.</p>
+                <p class="info-best-for"><strong>Best for:</strong> Small contact lists.</p>
             </div>
             <div class="info-card highlight-card">
-                <h3>Smart Search</h3>
-                <p>Uses a fast lookup system to find contacts instantly.</p>
+                <h3>⚡ Smart Search</h3>
+                <p>Uses a fast lookup method to find contacts directly.</p>
+                <p class="info-best-for"><strong>Best for:</strong> Large contact lists.</p>
             </div>
             <div class="info-card">
-                <h3>Why Smart Search is Better</h3>
-                <p>As the number of contacts grows, Smart Search remains fast while Normal Search takes longer.</p>
+                <h3>💡 Why Compare Them?</h3>
+                <p>As the number of contacts increases, Smart Search remains fast while Normal Search becomes slower.</p>
+                <p>Modern applications use optimized search techniques to quickly find information.</p>
             </div>
         </div>
     </div>

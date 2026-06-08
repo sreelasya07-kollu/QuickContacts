@@ -1,3 +1,4 @@
+import random
 import time
 from datetime import datetime
 
@@ -11,6 +12,7 @@ phone_index = {}
 next_id = 1
 
 SAMPLE_SIZES = [100, 1000, 5000, 10000]
+SORT_ARRAY_SIZES = [100, 500, 1000]
 CATEGORIES = ["Family", "Friends", "Work", "Other"]
 
 last_added = {"name": "", "phone": "", "category": "", "added_at": ""}
@@ -153,26 +155,91 @@ def benchmark_temp_size(size):
     temp_phone.get(target_phone)
     dict_time = time.perf_counter() - dict_start
 
+    result = build_timing_result(
+        list_time,
+        dict_time,
+        list_comparisons,
+        dict_comparisons,
+        total_contacts=size,
+    )
+    result["data_size"] = size
+    return result
+
+
+def benchmark_iterations():
+    size = len(contacts_list)
+    if size < 50:
+        return 5000
+    if size < 500:
+        return 1000
+    return max(100, min(5000, size * 5))
+
+
+def ms_from_seconds(seconds):
+    return round(seconds * 1000, 6)
+
+
+def build_timing_result(
+    list_time,
+    dict_time,
+    list_comparisons,
+    dict_comparisons,
+    query="",
+    list_matches=0,
+    dict_matches=0,
+    total_contacts=None,
+):
+    normal_ms = ms_from_seconds(list_time)
+    smart_ms = ms_from_seconds(dict_time)
     faster = friendly_faster(list_time, dict_time)
 
+    winner_message = (
+        "Smart Search is recommended for large contact lists because it finds contacts "
+        "directly without checking every contact."
+        if faster == "Smart Search"
+        else "Normal Search completed the lookup for this contact list."
+    )
+
     return {
-        "data_size": size,
-        "list_time_ms": round(list_time * 1000, 4),
-        "dict_time_ms": round(dict_time * 1000, 4),
+        "query": query,
+        "time_taken": normal_ms,
+        "list_time_ms": normal_ms,
+        "dict_time_ms": smart_ms,
+        "list_search_time": normal_ms,
+        "dictionary_search_time": smart_ms,
+        "normal_search_time_ms": normal_ms,
+        "smart_search_time_ms": smart_ms,
+        "execution_time": {
+            "normal_search_ms": normal_ms,
+            "smart_search_ms": smart_ms,
+        },
         "list_comparisons": list_comparisons,
         "dict_comparisons": dict_comparisons,
         "contacts_checked": list_comparisons,
         "lookups_performed": dict_comparisons,
         "faster": faster,
-        "normal_search_time_ms": round(list_time * 1000, 4),
-        "smart_search_time_ms": round(dict_time * 1000, 4),
+        "faster_method": faster,
+        "best_search_method": faster,
+        "list_complexity": "O(n)",
+        "dict_complexity": "O(1)",
+        "list_matches": list_matches,
+        "dict_matches": dict_matches,
+        "total_contacts": total_contacts if total_contacts is not None else len(contacts_list),
+        "winner_message": winner_message,
     }
 
 
 def measure_search_performance(query):
+    if not contacts_list:
+        return build_timing_result(0, 0, 0, 0, query=query)
+
+    iterations = benchmark_iterations()
+
     list_start = time.perf_counter()
     list_results, list_comparisons = search_list_linear(query)
-    list_time = time.perf_counter() - list_start
+    for _ in range(iterations - 1):
+        list_results, list_comparisons = search_list_linear(query)
+    list_time = (time.perf_counter() - list_start) / iterations
 
     phone_target = query
     if phone_target not in phone_index and list_results:
@@ -180,26 +247,19 @@ def measure_search_performance(query):
 
     dict_start = time.perf_counter()
     dict_results, dict_comparisons = search_dict_by_phone(phone_target)
-    dict_time = time.perf_counter() - dict_start
+    for _ in range(iterations - 1):
+        dict_results, dict_comparisons = search_dict_by_phone(phone_target)
+    dict_time = (time.perf_counter() - dict_start) / iterations
 
-    faster = friendly_faster(list_time, dict_time)
-
-    return {
-        "query": query,
-        "list_time_ms": round(list_time * 1000, 4),
-        "dict_time_ms": round(dict_time * 1000, 4),
-        "normal_search_time_ms": round(list_time * 1000, 4),
-        "smart_search_time_ms": round(dict_time * 1000, 4),
-        "list_comparisons": list_comparisons,
-        "dict_comparisons": dict_comparisons,
-        "contacts_checked": list_comparisons,
-        "lookups_performed": dict_comparisons,
-        "faster": faster,
-        "best_search_method": faster,
-        "list_matches": len(list_results),
-        "dict_matches": len(dict_results),
-        "total_contacts": len(contacts_list),
-    }
+    return build_timing_result(
+        list_time,
+        dict_time,
+        list_comparisons,
+        dict_comparisons,
+        query=query,
+        list_matches=len(list_results),
+        dict_matches=len(dict_results),
+    )
 
 
 def generate_sample_data(count):
@@ -212,6 +272,98 @@ def generate_sample_data(count):
             "Other",
         )
     return len(contacts_list)
+
+
+def bubble_sort(numbers):
+    data = list(numbers)
+    length = len(data)
+    for i in range(length):
+        for j in range(length - i - 1):
+            if data[j] > data[j + 1]:
+                data[j], data[j + 1] = data[j + 1], data[j]
+    return data
+
+
+def merge(left, right):
+    result = []
+    left_index = 0
+    right_index = 0
+    while left_index < len(left) and right_index < len(right):
+        if left[left_index] <= right[right_index]:
+            result.append(left[left_index])
+            left_index += 1
+        else:
+            result.append(right[right_index])
+            right_index += 1
+    result.extend(left[left_index:])
+    result.extend(right[right_index:])
+    return result
+
+
+def merge_sort(numbers):
+    if len(numbers) <= 1:
+        return list(numbers)
+    middle = len(numbers) // 2
+    left_half = merge_sort(numbers[:middle])
+    right_half = merge_sort(numbers[middle:])
+    return merge(left_half, right_half)
+
+
+def parse_number_array(raw_value):
+    if isinstance(raw_value, list):
+        parts = raw_value
+    else:
+        parts = [part.strip() for part in str(raw_value).split(",") if part.strip()]
+
+    if not parts:
+        raise ValueError("Enter at least one number separated by commas.")
+
+    numbers = []
+    for part in parts:
+        try:
+            numbers.append(int(part) if "." not in part else float(part))
+        except ValueError as exc:
+            raise ValueError(f"'{part}' is not a valid number.") from exc
+
+    return numbers
+
+
+def compare_sort_algorithms(numbers):
+    bubble_data = list(numbers)
+    merge_data = list(numbers)
+
+    bubble_start = time.perf_counter()
+    bubble_sorted = bubble_sort(bubble_data)
+    bubble_time = time.perf_counter() - bubble_start
+
+    merge_start = time.perf_counter()
+    merge_sorted = merge_sort(merge_data)
+    merge_time = time.perf_counter() - merge_start
+
+    bubble_ms = round(bubble_time * 1000, 6)
+    merge_ms = round(merge_time * 1000, 6)
+
+    if merge_time <= bubble_time:
+        faster = "Merge Sort"
+        difference_ms = round((bubble_time - merge_time) * 1000, 6)
+    else:
+        faster = "Bubble Sort"
+        difference_ms = round((merge_time - bubble_time) * 1000, 6)
+
+    return {
+        "original_array": numbers,
+        "sorted_array": bubble_sorted,
+        "array_size": len(numbers),
+        "bubble_sort_time_ms": bubble_ms,
+        "merge_sort_time_ms": merge_ms,
+        "bubble_sort_execution_time": bubble_ms,
+        "merge_sort_execution_time": merge_ms,
+        "faster_algorithm": faster,
+        "performance_difference_ms": difference_ms,
+        "bubble_complexity": "O(n²)",
+        "merge_complexity": "O(n log n)",
+        "sorted_match": bubble_sorted == merge_sorted,
+    }
 
 
 def init_default_contacts():
@@ -248,6 +400,11 @@ def search_page():
 @app.route("/performance")
 def performance_page():
     return render_template("performance.html", active="performance")
+
+
+@app.route("/sorting")
+def sorting_page():
+    return render_template("sorting.html", active="sorting")
 
 
 @app.route("/api/stats")
@@ -384,6 +541,33 @@ def api_performance_search():
 def api_performance_report():
     report = [benchmark_temp_size(size) for size in SAMPLE_SIZES]
     return jsonify(report)
+
+
+@app.route("/api/sorting/compare", methods=["POST"])
+def api_sorting_compare():
+    data = request.get_json(silent=True) or {}
+    raw_numbers = data.get("numbers", "")
+
+    try:
+        numbers = parse_number_array(raw_numbers)
+        if len(numbers) > 2000:
+            return jsonify({"error": "Maximum array size is 2000 numbers."}), 400
+        return jsonify(compare_sort_algorithms(numbers))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.route("/api/sorting/random/<int:count>")
+def api_sorting_random(count):
+    if count not in SORT_ARRAY_SIZES:
+        return jsonify({"error": "Supported sizes: 100, 500, 1000"}), 400
+
+    numbers = [random.randint(1, 10000) for _ in range(count)]
+    return jsonify({
+        "numbers": numbers,
+        "array_size": count,
+        "display": ", ".join(str(n) for n in numbers),
+    })
 
 
 init_default_contacts()
