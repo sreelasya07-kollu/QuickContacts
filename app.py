@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 from flask import Flask, jsonify, render_template, request
 
@@ -10,14 +11,28 @@ phone_index = {}
 next_id = 1
 
 SAMPLE_SIZES = [100, 1000, 5000, 10000]
+CATEGORIES = ["Family", "Friends", "Work", "Other"]
+
+last_added = {"name": "", "phone": "", "category": "", "added_at": ""}
+last_search = {"name": "", "phone": "", "category": "", "searched_at": ""}
+best_search_method = "Smart Search"
 
 DEFAULT_CONTACTS = [
-    {"name": "Sree Lasya Kollu", "phone": "9876543210", "email": "lasya@email.com"},
-    {"name": "Siddu Kumar", "phone": "9123456780", "email": "siddu@email.com"},
-    {"name": "Rajesh Patel", "phone": "9988776655", "email": "rajesh@work.com"},
-    {"name": "Ananya Sharma", "phone": "8765432109", "email": "ananya@email.com"},
-    {"name": "Vikram Reddy", "phone": "7654321098", "email": "vikram@company.com"},
+    {"name": "Sree Lasya Kollu", "phone": "9876543210", "email": "lasya@email.com", "category": "Family"},
+    {"name": "Siddu Kumar", "phone": "9123456780", "email": "siddu@email.com", "category": "Friends"},
+    {"name": "Rajesh Patel", "phone": "9988776655", "email": "rajesh@work.com", "category": "Work"},
+    {"name": "Ananya Sharma", "phone": "8765432109", "email": "ananya@email.com", "category": "Family"},
+    {"name": "Vikram Reddy", "phone": "7654321098", "email": "vikram@company.com", "category": "Work"},
 ]
+
+
+def friendly_faster(list_time, dict_time):
+    global best_search_method
+    if dict_time <= list_time:
+        best_search_method = "Smart Search"
+        return "Smart Search"
+    best_search_method = "Normal Search"
+    return "Normal Search"
 
 
 def clear_contacts():
@@ -28,18 +43,26 @@ def clear_contacts():
     next_id = 1
 
 
-def add_contact_to_storage(name, phone, email):
-    global next_id
+def add_contact_to_storage(name, phone, email, category="Other"):
+    global next_id, last_added
     contact = {
         "id": next_id,
         "name": name.strip(),
         "phone": phone.strip(),
         "email": email.strip(),
+        "category": category if category in CATEGORIES else "Other",
     }
     contacts_list.append(contact)
     contacts_dict[next_id] = contact
     phone_index[contact["phone"]] = contact
     next_id += 1
+
+    last_added = {
+        "name": contact["name"],
+        "phone": contact["phone"],
+        "category": contact["category"],
+        "added_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
     return contact
 
 
@@ -61,6 +84,8 @@ def update_contact_in_storage(contact_id, data):
     contact["name"] = data.get("name", contact["name"]).strip()
     contact["phone"] = data.get("phone", contact["phone"]).strip()
     contact["email"] = data.get("email", contact["email"]).strip()
+    if data.get("category"):
+        contact["category"] = data["category"] if data["category"] in CATEGORIES else contact["category"]
 
     if old_phone != contact["phone"]:
         phone_index.pop(old_phone, None)
@@ -80,33 +105,21 @@ def search_list_linear(query):
 
     for contact in contacts_list:
         comparisons += 1
-        name_match = query_lower in contact["name"].lower()
-        phone_match = query in contact["phone"]
-        if name_match or phone_match:
+        if query_lower in contact["name"].lower() or query in contact["phone"]:
             results.append(contact)
 
     return results, comparisons
 
 
-def search_dict_by_phone(query):
+def search_dict_by_phone(phone):
     comparisons = 1
-    contact = phone_index.get(query)
+    contact = phone_index.get(phone)
     results = [contact] if contact else []
     return results, comparisons
 
 
-def search_list_by_phone(phone):
-    comparisons = 0
-    for contact in contacts_list:
-        comparisons += 1
-        if contact["phone"] == phone:
-            return contact, comparisons
-    return None, comparisons
-
-
 def build_temp_contacts(size):
     temp_list = []
-    temp_dict = {}
     temp_phone = {}
 
     for index in range(1, size + 1):
@@ -115,34 +128,32 @@ def build_temp_contacts(size):
             "name": f"Contact {index}",
             "phone": f"900000{index:05d}",
             "email": f"contact{index}@email.com",
+            "category": "Other",
         }
         temp_list.append(contact)
-        temp_dict[index] = contact
         temp_phone[contact["phone"]] = contact
 
-    return temp_list, temp_dict, temp_phone
+    return temp_list, temp_phone
 
 
 def benchmark_temp_size(size):
-    temp_list, _, temp_phone = build_temp_contacts(size)
+    temp_list, temp_phone = build_temp_contacts(size)
     target_phone = temp_list[-1]["phone"]
 
     list_start = time.perf_counter()
     list_comparisons = 0
-    list_found = None
     for contact in temp_list:
         list_comparisons += 1
         if contact["phone"] == target_phone:
-            list_found = contact
             break
     list_time = time.perf_counter() - list_start
 
     dict_start = time.perf_counter()
     dict_comparisons = 1
-    dict_found = temp_phone.get(target_phone)
+    temp_phone.get(target_phone)
     dict_time = time.perf_counter() - dict_start
 
-    faster = "Dictionary (O(1))" if dict_time <= list_time else "List (O(n))"
+    faster = friendly_faster(list_time, dict_time)
 
     return {
         "data_size": size,
@@ -150,11 +161,11 @@ def benchmark_temp_size(size):
         "dict_time_ms": round(dict_time * 1000, 4),
         "list_comparisons": list_comparisons,
         "dict_comparisons": dict_comparisons,
-        "list_complexity": "O(n)",
-        "dict_complexity": "O(1)",
+        "contacts_checked": list_comparisons,
+        "lookups_performed": dict_comparisons,
         "faster": faster,
-        "target_phone": target_phone,
-        "found": list_found is not None and dict_found is not None,
+        "normal_search_time_ms": round(list_time * 1000, 4),
+        "smart_search_time_ms": round(dict_time * 1000, 4),
     }
 
 
@@ -171,17 +182,20 @@ def measure_search_performance(query):
     dict_results, dict_comparisons = search_dict_by_phone(phone_target)
     dict_time = time.perf_counter() - dict_start
 
-    faster = "Dictionary (O(1))" if dict_time <= list_time else "List (O(n))"
+    faster = friendly_faster(list_time, dict_time)
 
     return {
         "query": query,
         "list_time_ms": round(list_time * 1000, 4),
         "dict_time_ms": round(dict_time * 1000, 4),
+        "normal_search_time_ms": round(list_time * 1000, 4),
+        "smart_search_time_ms": round(dict_time * 1000, 4),
         "list_comparisons": list_comparisons,
         "dict_comparisons": dict_comparisons,
-        "list_complexity": "O(n)",
-        "dict_complexity": "O(1)",
+        "contacts_checked": list_comparisons,
+        "lookups_performed": dict_comparisons,
         "faster": faster,
+        "best_search_method": faster,
         "list_matches": len(list_results),
         "dict_matches": len(dict_results),
         "total_contacts": len(contacts_list),
@@ -195,6 +209,7 @@ def generate_sample_data(count):
             f"Contact {index}",
             f"900000{index:05d}",
             f"contact{index}@email.com",
+            "Other",
         )
     return len(contacts_list)
 
@@ -202,7 +217,12 @@ def generate_sample_data(count):
 def init_default_contacts():
     clear_contacts()
     for contact in DEFAULT_CONTACTS:
-        add_contact_to_storage(contact["name"], contact["phone"], contact["email"])
+        add_contact_to_storage(
+            contact["name"],
+            contact["phone"],
+            contact["email"],
+            contact["category"],
+        )
 
 
 @app.route("/")
@@ -212,7 +232,7 @@ def dashboard():
 
 @app.route("/add")
 def add_contact_page():
-    return render_template("add.html", active="add")
+    return render_template("add.html", active="add", categories=CATEGORIES)
 
 
 @app.route("/contacts")
@@ -232,7 +252,12 @@ def performance_page():
 
 @app.route("/api/stats")
 def api_stats():
-    return jsonify({"total_contacts": len(contacts_list)})
+    return jsonify({
+        "total_contacts": len(contacts_list),
+        "last_added": last_added,
+        "last_search": last_search,
+        "best_search_method": best_search_method,
+    })
 
 
 @app.route("/api/contacts", methods=["GET"])
@@ -249,6 +274,7 @@ def api_add_contact():
     name = (data.get("name") or "").strip()
     phone = (data.get("phone") or "").strip()
     email = (data.get("email") or "").strip()
+    category = (data.get("category") or "Other").strip()
 
     if not name or not phone or not email:
         return jsonify({"error": "Name, phone, and email are required"}), 400
@@ -256,7 +282,7 @@ def api_add_contact():
     if phone in phone_index:
         return jsonify({"error": "Phone number already exists"}), 400
 
-    contact = add_contact_to_storage(name, phone, email)
+    contact = add_contact_to_storage(name, phone, email, category)
     return jsonify(contact), 201
 
 
@@ -288,12 +314,29 @@ def api_delete_contact(contact_id):
 
 @app.route("/api/search")
 def api_search():
+    global last_search
     query = request.args.get("q", "").strip()
     if not query:
         return jsonify({"results": [], "performance": None})
 
-    results, _ = search_list_linear(query)
     performance = measure_search_performance(query)
+    results, _ = search_list_linear(query)
+
+    if results:
+        contact = results[0]
+        last_search = {
+            "name": contact["name"],
+            "phone": contact["phone"],
+            "category": contact["category"],
+            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+    else:
+        last_search = {
+            "name": "No match found",
+            "phone": "—",
+            "category": "—",
+            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
 
     return jsonify({"results": results, "performance": performance})
 
@@ -308,14 +351,14 @@ def api_suggestions():
     query_lower = query.lower()
     for contact in contacts_list:
         if query_lower in contact["name"].lower() or query in contact["phone"]:
-            suggestions.append(
-                {
-                    "id": contact["id"],
-                    "name": contact["name"],
-                    "phone": contact["phone"],
-                }
-            )
-        if len(suggestions) >= 5:
+            suggestions.append({
+                "id": contact["id"],
+                "name": contact["name"],
+                "phone": contact["phone"],
+                "email": contact["email"],
+                "category": contact["category"],
+            })
+        if len(suggestions) >= 8:
             break
     return jsonify(suggestions)
 

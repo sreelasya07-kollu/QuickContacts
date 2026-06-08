@@ -25,7 +25,6 @@ function showToast(message, type = 'success') {
     toast.className = `toast ${type}`;
     toast.textContent = message;
     container.appendChild(toast);
-
     setTimeout(() => toast.remove(), 3000);
 }
 
@@ -34,42 +33,66 @@ async function apiFetch(url, options = {}) {
         headers: { 'Content-Type': 'application/json', ...options.headers },
         ...options,
     });
-
     const data = await response.json();
-
     if (!response.ok) {
         throw new Error(data.error || 'Something went wrong');
     }
-
     return data;
-}
-
-function renderRecentSearches(container, searches) {
-    if (!container) return;
-
-    if (!searches || searches.length === 0) {
-        container.innerHTML = '<li class="empty-state">No recent searches yet</li>';
-        return;
-    }
-
-    container.innerHTML = searches.map(contact => `
-        <li>
-            <span class="contact-name">${escapeHtml(contact.name)}</span>
-            <span class="contact-phone">${escapeHtml(contact.phone)}</span>
-        </li>
-    `).join('');
 }
 
 function escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text ?? '';
     return div.innerHTML;
 }
 
-function getCategoryTag(category) {
-    return `<span class="category-tag ${category}">${category}</span>`;
+function getInitial(name) {
+    return (name || '?').trim().charAt(0).toUpperCase();
 }
 
-function getInitials(name) {
-    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function getContactAvatar(name, size = '') {
+    const letter = getInitial(name);
+    return `<div class="contact-avatar ${size}">${letter}</div>`;
+}
+
+function getCategoryTag(category) {
+    if (!category) return '';
+    return `<span class="category-tag ${category}">${escapeHtml(category)}</span>`;
+}
+
+function emptyState(icon, title, message, actionHtml = '') {
+    return `
+        <div class="empty-state-box">
+            <span class="empty-icon">${icon}</span>
+            <h3>${title}</h3>
+            <p>${message}</p>
+            ${actionHtml}
+        </div>
+    `;
+}
+
+function renderContactCard(contact, showActions = false) {
+    const actions = showActions ? `
+        <div class="card-actions">
+            <button class="btn small secondary" onclick="openEditModal(${contact.id})">Edit</button>
+            <button class="btn small danger" onclick="deleteContact(${contact.id})">Delete</button>
+        </div>
+    ` : '';
+
+    return `
+        <div class="contact-card fade-load">
+            <div class="contact-card-header">
+                ${getContactAvatar(contact.name)}
+                <div class="contact-card-info">
+                    <h3>${escapeHtml(contact.name)}</h3>
+                    ${getCategoryTag(contact.category)}
+                </div>
+            </div>
+            <div class="contact-details">
+                <p><span class="detail-label">Phone</span> ${escapeHtml(contact.phone)}</p>
+                <p><span class="detail-label">Email</span> ${escapeHtml(contact.email)}</p>
+            </div>
+            ${actions}
+        </div>
+    `;
 }

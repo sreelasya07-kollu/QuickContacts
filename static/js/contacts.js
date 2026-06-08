@@ -2,7 +2,6 @@ let allContacts = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     loadContacts();
-
     document.getElementById('editContactForm').addEventListener('submit', handleEdit);
     document.getElementById('closeEditModal').addEventListener('click', closeModal);
     document.getElementById('cancelEdit').addEventListener('click', closeModal);
@@ -18,29 +17,21 @@ async function loadContacts() {
 }
 
 function renderContacts(contacts) {
-    const tbody = document.getElementById('contactsBody');
+    const grid = document.getElementById('contactsGrid');
     document.getElementById('contactCount').textContent =
         `${contacts.length} contact${contacts.length !== 1 ? 's' : ''}`;
 
-    if (contacts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No contacts found</td></tr>';
+    if (!contacts.length) {
+        grid.innerHTML = emptyState(
+            '👥',
+            'No contacts available',
+            'Add your first contact to get started.',
+            '<a href="/add" class="btn primary">Add Your First Contact</a>'
+        );
         return;
     }
 
-    tbody.innerHTML = contacts.map(contact => `
-        <tr>
-            <td>${contact.id}</td>
-            <td><strong>${escapeHtml(contact.name)}</strong></td>
-            <td>${escapeHtml(contact.phone)}</td>
-            <td>${escapeHtml(contact.email)}</td>
-            <td>
-                <div class="table-actions">
-                    <button class="btn small secondary" onclick="openEditModal(${contact.id})">Edit</button>
-                    <button class="btn small danger" onclick="deleteContact(${contact.id})">Delete</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    grid.innerHTML = contacts.map(c => renderContactCard(c, true)).join('');
 }
 
 function openEditModal(id) {
@@ -51,6 +42,7 @@ function openEditModal(id) {
     document.getElementById('editName').value = contact.name;
     document.getElementById('editPhone').value = contact.phone;
     document.getElementById('editEmail').value = contact.email;
+    document.getElementById('editCategory').value = contact.category || 'Other';
     document.getElementById('editModal').classList.add('active');
 }
 
@@ -60,20 +52,18 @@ function closeModal() {
 
 async function handleEdit(e) {
     e.preventDefault();
-
     const id = document.getElementById('editId').value;
-    const data = {
-        name: document.getElementById('editName').value.trim(),
-        phone: document.getElementById('editPhone').value.trim(),
-        email: document.getElementById('editEmail').value.trim(),
-    };
 
     try {
         await apiFetch(`/api/contacts/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(data),
+            body: JSON.stringify({
+                name: document.getElementById('editName').value.trim(),
+                phone: document.getElementById('editPhone').value.trim(),
+                email: document.getElementById('editEmail').value.trim(),
+                category: document.getElementById('editCategory').value,
+            }),
         });
-
         showToast('Contact updated successfully!');
         closeModal();
         loadContacts();
