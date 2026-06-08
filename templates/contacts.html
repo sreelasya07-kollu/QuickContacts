@@ -5,26 +5,15 @@
 
 {% block content %}
 <section class="toolbar animate-in">
-    <p class="section-desc">All contacts stored in both Python List and Dictionary</p>
+    <p class="section-desc">All your saved contacts in one place</p>
     <span class="contact-count" id="contactCount">0 contacts</span>
 </section>
 
 <section class="card animate-in">
-    <div class="card-body table-wrapper">
-        <table class="contacts-table" id="contactsTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="contactsBody">
-                <tr><td colspan="5" class="empty-state">Loading contacts...</td></tr>
-            </tbody>
-        </table>
+    <div class="card-body" id="contactsContainer">
+        <div class="contacts-grid" id="contactsGrid">
+            <p class="empty-state-box">Loading contacts...</p>
+        </div>
     </div>
 </section>
 
@@ -47,6 +36,15 @@
             <div class="form-group">
                 <label for="editEmail">Email Address</label>
                 <input type="email" id="editEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="editCategory">Category</label>
+                <select id="editCategory" required>
+                    <option value="Family">Family</option>
+                    <option value="Friends">Friends</option>
+                    <option value="Work">Work</option>
+                    <option value="Other">Other</option>
+                </select>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn primary">Update Contact</button>

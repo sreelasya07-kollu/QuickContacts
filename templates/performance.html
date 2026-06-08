@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Performance Analysis{% endblock %}
-{% block page_title %}Performance Analysis{% endblock %}
+{% block title %}Search Speed{% endblock %}
+{% block page_title %}Search Speed{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -10,19 +10,16 @@
 {% block content %}
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Generate Sample Data</h2>
-        <span class="badge">For Benchmarking</span>
+        <h2>Try With More Contacts</h2>
+        <span class="badge badge-soft">Optional</span>
     </div>
     <div class="card-body">
-        <p class="section-desc">
-            Generate contacts to compare List (Linear Search - O(n)) vs Dictionary (Hash Lookup - O(1)).
-            Timing is measured using Python's <code>time</code> module.
-        </p>
+        <p class="section-desc">Add sample contacts to see how search speed changes as your contact list grows.</p>
         <div class="generate-actions">
-            <button class="btn primary" data-size="100">Generate 100</button>
-            <button class="btn primary" data-size="1000">Generate 1000</button>
-            <button class="btn primary" data-size="5000">Generate 5000</button>
-            <button class="btn primary" data-size="10000">Generate 10000</button>
+            <button class="btn primary" data-size="100">Add 100 Contacts</button>
+            <button class="btn primary" data-size="1000">Add 1000 Contacts</button>
+            <button class="btn primary" data-size="5000">Add 5000 Contacts</button>
+            <button class="btn primary" data-size="10000">Add 10000 Contacts</button>
         </div>
         <p class="contact-count" id="currentDataSize">Current contacts: 0</p>
     </div>
@@ -30,57 +27,61 @@
 
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Live Search Benchmark</h2>
+        <h2>Compare Search Speed</h2>
     </div>
     <div class="card-body">
         <div class="performance-controls">
             <div class="form-group">
-                <label for="perfQuery">Phone Number to Search</label>
-                <input type="text" id="perfQuery" placeholder="Enter exact phone number">
+                <label for="perfQuery">Search by name or phone</label>
+                <input type="text" id="perfQuery" placeholder="Enter a contact name or phone number">
             </div>
-            <button class="btn primary" id="runBenchmark">Run Search Benchmark</button>
+            <button class="btn primary" id="runBenchmark">Compare Search</button>
+            <button class="btn secondary" id="clearBenchmark">Clear</button>
         </div>
     </div>
 </section>
 
-<section class="stats-grid animate-in" id="benchmarkStats" style="display: none;">
+<section class="comparison-grid hidden-section" id="benchmarkComparison"></section>
+<section class="timing-results hidden-section" id="benchmarkTiming"></section>
+
+<section class="stats-grid animate-in hidden-section" id="benchmarkStats">
     <div class="stat-card">
         <div class="stat-icon blue">📋</div>
         <div class="stat-info">
-            <span class="stat-label">List Search Time</span>
+            <span class="stat-label">Normal Search</span>
             <span class="stat-value" id="listTime">— ms</span>
-            <span class="stat-sub">O(n) · <span id="listComparisons">0</span> comparisons</span>
+            <span class="stat-sub"><span id="listComparisons">0</span> contacts checked</span>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon green">🗂️</div>
+        <div class="stat-icon green">⚡</div>
         <div class="stat-info">
-            <span class="stat-label">Dictionary Search Time</span>
+            <span class="stat-label">Smart Search</span>
             <span class="stat-value" id="dictTime">— ms</span>
-            <span class="stat-sub">O(1) · <span id="dictComparisons">0</span> comparisons</span>
+            <span class="stat-sub"><span id="dictComparisons">0</span> lookups performed</span>
         </div>
     </div>
     <div class="stat-card highlight">
         <div class="stat-icon gold">🏆</div>
         <div class="stat-info">
-            <span class="stat-label">Faster Method</span>
+            <span class="stat-label">Best Search Method</span>
             <span class="stat-value small" id="fasterMethod">—</span>
         </div>
     </div>
 </section>
 
-<section class="card animate-in">
+<section class="card animate-in hidden-section" id="barChartSection">
     <div class="card-header">
-        <h2>Bar Chart – Search Time Comparison</h2>
+        <h2>Search Speed Comparison</h2>
     </div>
     <div class="card-body chart-container">
         <canvas id="barChart"></canvas>
     </div>
 </section>
 
-<section class="card animate-in">
+<section class="card animate-in" id="lineChartSection">
     <div class="card-header">
-        <h2>Line Chart – Performance vs Data Size</h2>
+        <h2>Search Speed vs Contact List Size</h2>
     </div>
     <div class="card-body chart-container">
         <canvas id="lineChart"></canvas>
@@ -89,22 +90,22 @@
 
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Performance Report</h2>
+        <h2>Speed Report</h2>
     </div>
     <div class="card-body table-wrapper">
         <table class="contacts-table" id="reportTable">
             <thead>
                 <tr>
-                    <th>Data Size</th>
-                    <th>List Search Time (ms)</th>
-                    <th>Dictionary Search Time (ms)</th>
-                    <th>List Comparisons</th>
-                    <th>Dict Comparisons</th>
-                    <th>Faster Method</th>
+                    <th>Contacts</th>
+                    <th>Normal Search (ms)</th>
+                    <th>Smart Search (ms)</th>
+                    <th>Contacts Checked</th>
+                    <th>Lookups</th>
+                    <th>Best Method</th>
                 </tr>
             </thead>
             <tbody id="reportBody">
-                <tr><td colspan="6" class="empty-state">Loading performance report...</td></tr>
+                <tr><td colspan="6" class="empty-state">Loading speed report...</td></tr>
             </tbody>
         </table>
     </div>
@@ -112,19 +113,21 @@
 
 <section class="card animate-in">
     <div class="card-header">
-        <h2>Data Structure Explanation</h2>
+        <h2>How Search Works</h2>
     </div>
     <div class="card-body">
         <div class="info-grid">
             <div class="info-card">
-                <h3>📋 Python List</h3>
-                <p>Contacts stored sequentially. Searching requires checking each contact one by one until a match is found.</p>
-                <span class="complexity">Time Complexity: O(n)</span>
+                <h3>Normal Search</h3>
+                <p>Checks contacts one by one until a match is found.</p>
+            </div>
+            <div class="info-card highlight-card">
+                <h3>Smart Search</h3>
+                <p>Uses a fast lookup system to find contacts instantly.</p>
             </div>
             <div class="info-card">
-                <h3>🗂️ Python Dictionary</h3>
-                <p>Contacts indexed by phone number using hash keys. Direct lookup without scanning all contacts.</p>
-                <span class="complexity">Time Complexity: O(1)</span>
+                <h3>Why Smart Search is Better</h3>
+                <p>As the number of contacts grows, Smart Search remains fast while Normal Search takes longer.</p>
             </div>
         </div>
     </div>

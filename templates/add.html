@@ -6,7 +6,7 @@
 {% block content %}
 <section class="card animate-in">
     <div class="card-header">
-        <h2>New Contact Details</h2>
+        <h2>New Contact</h2>
     </div>
     <div class="card-body">
         <form id="addContactForm" class="contact-form">
@@ -20,9 +20,19 @@
                     <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" placeholder="Enter email address" required>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn primary">Save Contact</button>
