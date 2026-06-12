@@ -15,7 +15,6 @@ contacts_dict = {}
 phone_index = {}
 next_id = 1
 
-SAMPLE_SIZES = [100, 1000, 5000, 10000]
 SORT_ARRAY_MAX_SIZE = 2000
 CATEGORIES = ["Family", "Friends", "Work", "Other"]
 
@@ -523,27 +522,12 @@ def api_suggestions():
     return jsonify(suggestions)
 
 
-@app.route("/api/generate/<int:count>", methods=["POST"])
-def api_generate_sample(count):
-    if count not in SAMPLE_SIZES:
-        return jsonify({"error": "Supported sizes: 100, 1000, 5000, 10000"}), 400
-
-    total = generate_sample_data(count)
-    return jsonify({"message": f"Generated {total} sample contacts", "total_contacts": total})
-
-
 @app.route("/api/performance/search")
 def api_performance_search():
     query = request.args.get("q", "").strip()
     if not query:
         return jsonify({"error": "Search query is required"}), 400
     return jsonify(measure_search_performance(query))
-
-
-@app.route("/api/performance/report")
-def api_performance_report():
-    report = [benchmark_temp_size(size) for size in SAMPLE_SIZES]
-    return jsonify(report)
 
 
 @app.route("/api/sorting/compare", methods=["POST"])
