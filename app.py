@@ -203,6 +203,7 @@ def build_timing_result(
     dict_matches=0,
     total_contacts=None,
 ):
+    """Format list vs dictionary search timings into a JSON-ready response."""
     normal_ms = ms_from_seconds(list_time)
     smart_ms = ms_from_seconds(dict_time)
     faster = friendly_faster(list_time, dict_time)
@@ -373,6 +374,7 @@ def compare_sort_algorithms(numbers):
 
 
 def init_default_contacts():
+    """Load the starter contacts when the application starts."""
     clear_contacts()
     for contact in DEFAULT_CONTACTS:
         add_contact_to_storage(
