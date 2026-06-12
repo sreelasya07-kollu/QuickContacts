@@ -1,235 +1,125 @@
-let barChart = null;
-let debounceTimer;
-let totalContacts = 0;
+let performanceChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    initCharts();
-    loadCurrentSize();
-
-    document.getElementById('runBenchmark').addEventListener('click', runLiveBenchmark);
-    document.getElementById('clearBenchmark').addEventListener('click', clearBenchmark);
-    document.getElementById('clearPerfInput').addEventListener('click', clearInput);
-
-    const perfQuery = document.getElementById('perfQuery');
-    perfQuery.addEventListener('input', () => {
-        toggleClearButton();
-        clearTimeout(debounceTimer);
-        const query = perfQuery.value.trim();
-        if (!query) {
-            document.getElementById('perfSuggestions').classList.remove('active');
-            document.getElementById('perfSuggestions').innerHTML = '';
-            return;
-        }
-        debounceTimer = setTimeout(() => fetchSuggestions(query), 200);
-    });
-
-    perfQuery.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') runLiveBenchmark();
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-box')) {
-            document.getElementById('perfSuggestions').classList.remove('active');
-        }
-    });
-
-    toggleClearButton();
+    initChart();
+    document.getElementById('runBenchmark').addEventListener('click', runBenchmark);
 });
 
-function toggleClearButton() {
-    const input = document.getElementById('perfQuery');
-    const btn = document.getElementById('clearPerfInput');
-    if (input && btn) btn.classList.toggle('visible', input.value.length > 0);
-}
+function initChart() {
+    const canvas = document.getElementById('performanceChart');
+    if (!canvas || typeof Chart === 'undefined') return;
 
-function setBenchmarkEnabled(enabled) {
-    const btn = document.getElementById('runBenchmark');
-    const msg = document.getElementById('noContactsMsg');
-    btn.disabled = !enabled;
-    msg.classList.toggle('hidden-section', enabled);
-}
+    const isDark = getTheme() === 'dark';
+    const tickColor = isDark ? '#9aa0b4' : '#64748b';
+    const gridColor = isDark ? 'rgba(45, 51, 72, 0.5)' : 'rgba(148, 163, 184, 0.35)';
 
-function clearInput() {
-    document.getElementById('perfQuery').value = '';
-    document.getElementById('perfSuggestions').classList.remove('active');
-    document.getElementById('perfSuggestions').innerHTML = '';
-    toggleClearButton();
-    document.getElementById('perfQuery').focus();
-}
-
-function clearBenchmark() {
-    clearInput();
-
-    document.getElementById('resultsSection').classList.add('hidden-section');
-    document.getElementById('searchMethodGrid').innerHTML = '';
-    document.getElementById('contactsCheckedBanner').innerHTML = '';
-    document.getElementById('winnerCard').innerHTML = '';
-
-    document.getElementById('barChartPlaceholder').classList.remove('hidden-section');
-    document.getElementById('barChart').classList.add('hidden-section');
-
-    if (barChart) {
-        barChart.data.datasets[0].data = [0, 0];
-        barChart.update();
-    }
-}
-
-async function fetchSuggestions(query) {
-    try {
-        const suggestions = await apiFetch(`/api/suggestions?q=${encodeURIComponent(query)}`);
-        const list = document.getElementById('perfSuggestions');
-
-        if (!suggestions.length) {
-            list.classList.remove('active');
-            return;
-        }
-
-        list.innerHTML = suggestions.map(s => `
-            <li data-name="${escapeHtml(s.name)}">
-                ${getContactAvatar(s.name, 'small')}
-                <span class="suggestion-text">
-                    <span class="suggestion-name">${escapeHtml(s.name)}</span>
-                    <span class="suggestion-phone">${escapeHtml(s.phone)}</span>
-                </span>
-            </li>
-        `).join('');
-
-        list.querySelectorAll('li').forEach(li => {
-            li.addEventListener('click', () => {
-                document.getElementById('perfQuery').value = li.dataset.name;
-                toggleClearButton();
-                list.classList.remove('active');
-            });
-        });
-
-        list.classList.add('active');
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-function initCharts() {
-    if (typeof Chart === 'undefined') return;
-
-    const barCanvas = document.getElementById('barChart');
-    if (!barCanvas) return;
-
-    barChart = new Chart(barCanvas.getContext('2d'), {
+    performanceChart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: {
             labels: ['Normal Search', 'Smart Search'],
             datasets: [{
-                label: 'Execution Time (ms)',
+                label: 'Search Time (ms)',
                 data: [0, 0],
-                backgroundColor: ['rgba(59,130,246,0.75)', 'rgba(34,197,94,0.75)'],
+                backgroundColor: ['rgba(59, 130, 246, 0.75)', 'rgba(34, 197, 94, 0.75)'],
+                borderColor: ['rgba(59, 130, 246, 1)', 'rgba(34, 197, 94, 1)'],
+                borderWidth: 2,
                 borderRadius: 10,
             }],
         },
-        options: chartOptions('Execution Time (ms)'),
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 700, easing: 'easeOutQuart' },
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Execution Time (ms)', color: tickColor },
+                    ticks: { color: tickColor },
+                    grid: { color: gridColor },
+                },
+                x: {
+                    ticks: { color: tickColor },
+                    grid: { display: false },
+                },
+            },
+        },
     });
 }
 
-function chartOptions(yLabel) {
-    return {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 600, easing: 'easeOutQuart' },
-        plugins: { legend: { labels: { color: '#9aa0b4' } } },
-        scales: {
-            y: { beginAtZero: true, title: { display: true, text: yLabel, color: '#9aa0b4' }, ticks: { color: '#9aa0b4' } },
-            x: { ticks: { color: '#9aa0b4' }, grid: { display: false } },
-        },
-    };
-}
-
-async function loadCurrentSize() {
-    try {
-        const stats = await apiFetch('/api/stats');
-        totalContacts = stats.total_contacts;
-        setBenchmarkEnabled(totalContacts > 0);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-function renderComparison(data) {
-    const { normalMs, smartMs } = getPerformanceTimes(data);
-    const normalTime = formatSearchTime(normalMs);
-    const smartTime = formatSearchTime(smartMs);
-    const chartNormal = Number(normalMs) || 0;
-    const chartSmart = Number(smartMs) || 0;
-    const bestMethod = data.best_search_method || data.faster_method || data.faster || '—';
-    const isSmart = bestMethod === 'Smart Search';
-
-    document.getElementById('resultsSection').classList.remove('hidden-section');
-    document.getElementById('totalContactsValue').textContent = data.total_contacts ?? totalContacts;
-
-    document.getElementById('searchMethodGrid').innerHTML = `
-        <div class="method-card">
-            <h4>Normal Search</h4>
-            <ul class="method-stats">
-                <li><span>Execution Time</span><strong class="time-value">${normalTime}</strong></li>
-                <li><span>Contacts Checked</span><strong>${data.contacts_checked ?? 0}</strong></li>
-                <li><span>Complexity</span><strong>${data.list_complexity || 'O(n)'}</strong></li>
-            </ul>
-        </div>
-        <div class="method-card winner">
-            <h4>Smart Search</h4>
-            <ul class="method-stats">
-                <li><span>Execution Time</span><strong class="time-value">${smartTime}</strong></li>
-                <li><span>Lookups Performed</span><strong>${data.lookups_performed ?? 1}</strong></li>
-                <li><span>Complexity</span><strong>${data.dict_complexity || 'O(1)'}</strong></li>
-            </ul>
-        </div>
-    `;
-
-    document.getElementById('contactsCheckedBanner').innerHTML = `
-        <p class="checked-line"><strong>Normal Search:</strong> ${data.contacts_checked ?? 0} contacts checked</p>
-        <p class="checked-line highlight-line"><strong>Smart Search:</strong> ${data.lookups_performed ?? 1} lookup</p>
-    `;
-
-    document.getElementById('winnerCard').innerHTML = `
-        <div class="winner-inner">
-            <span class="winner-icon">🏆</span>
-            <div>
-                <p class="winner-label">Best Search Method</p>
-                <h4 class="winner-name">${escapeHtml(bestMethod)}</h4>
-                <p class="winner-desc">${isSmart
-                    ? 'Smart Search is recommended for large contact lists because it finds contacts directly without checking every contact.'
-                    : escapeHtml(data.winner_message || 'Normal Search completed the lookup for this search.')}</p>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('barChartPlaceholder').classList.add('hidden-section');
-    document.getElementById('barChart').classList.remove('hidden-section');
-
-    if (barChart) {
-        barChart.data.labels = ['Normal Search', 'Smart Search'];
-        barChart.data.datasets[0].data = [chartNormal, chartSmart];
-        barChart.update('active');
-        requestAnimationFrame(() => barChart.resize());
-    }
-}
-
-async function runLiveBenchmark() {
-    const query = document.getElementById('perfQuery').value.trim();
-    if (!query) {
-        showToast('Enter a contact name to compare search speed', 'error');
-        return;
-    }
-
-    if (!totalContacts) {
-        showToast('No contacts available. Add contacts first.', 'error');
-        return;
-    }
+async function runBenchmark() {
+    const query = document.getElementById('perfQuery').value.trim() || 'a';
 
     try {
         const data = await apiFetch(`/api/performance/search?q=${encodeURIComponent(query)}`);
-        renderComparison(data);
-        toggleClearButton();
-        showToast('Search comparison complete!');
+
+        document.getElementById('listTime').textContent = `${data.list_time_ms} ms`;
+        document.getElementById('dictTime').textContent = `${data.dict_time_ms} ms`;
+        document.getElementById('fasterMethod').textContent = data.faster;
+        document.getElementById('totalForPerf').textContent = data.total_contacts;
+
+        document.getElementById('benchmarkComparison').innerHTML = `
+            <div class="compare-card normal-search">
+                <div class="compare-card-top">
+                    <span class="compare-icon">📋</span>
+                    <div>
+                        <h3>Normal Search</h3>
+                        <p>Python List · Linear Search</p>
+                    </div>
+                </div>
+                <div class="compare-stat">
+                    <span class="compare-stat-label">Contacts Checked</span>
+                    <span class="compare-stat-value">${data.contacts_checked}</span>
+                </div>
+            </div>
+            <div class="compare-card smart-search ${data.faster === 'Smart Search' ? 'winner' : ''}">
+                <div class="compare-card-top">
+                    <span class="compare-icon">⚡</span>
+                    <div>
+                        <h3>Smart Search</h3>
+                        <p>Python Dictionary · Hash Lookup</p>
+                    </div>
+                </div>
+                <div class="compare-stat">
+                    <span class="compare-stat-label">Lookups Performed</span>
+                    <span class="compare-stat-value">${data.lookups_performed}</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('benchmarkTiming').innerHTML = `
+            <div class="timing-row">
+                <div class="timing-item">
+                    <span>Normal Search Time</span>
+                    <strong>${data.list_time_ms} ms</strong>
+                </div>
+                <div class="timing-item highlight">
+                    <span>Smart Search Time</span>
+                    <strong>${data.dict_time_ms} ms</strong>
+                </div>
+                <div class="timing-item winner-badge">
+                    <span>Faster Method</span>
+                    <strong>${escapeHtml(data.faster)}</strong>
+                </div>
+            </div>
+        `;
+
+        ['benchmarkComparison', 'benchmarkTiming', 'benchmarkChartSection'].forEach(id => {
+            document.getElementById(id).classList.remove('hidden-section');
+            document.getElementById(id).classList.add('fade-load');
+        });
+
+        if (performanceChart) {
+            performanceChart.data.datasets[0].data = [data.list_time_ms, data.dict_time_ms];
+            performanceChart.update('active');
+        }
+
+        showToast('Benchmark completed!');
     } catch (err) {
         showToast(err.message, 'error');
     }
+}
+
+function getTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
 }

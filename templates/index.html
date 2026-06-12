@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}Home Dashboard{% endblock %}
 
 {% block content %}
 <section class="hero-card animate-in">
-    <h2>Welcome to ContactHub</h2>
-    <p>Your smart contact manager — add, organize, and find contacts quickly. Everything you need in one simple place.</p>
+    <div class="hero-content">
+        <h2>Welcome to ContactHub</h2>
+        <p>
+            Your modern contact manager — add, view, edit, and search contacts with ease.
+            Built to feel like a real product while demonstrating smart search efficiency behind the scenes.
+        </p>
+    </div>
 </section>
 
 <section class="stats-grid">
@@ -18,31 +23,23 @@
         </div>
     </div>
     <div class="stat-card animate-in" style="--delay: 1">
-        <div class="stat-icon green">➕</div>
+        <div class="stat-icon purple">⏱️</div>
         <div class="stat-info">
-            <span class="stat-label">Last Added Contact</span>
-            <span class="stat-value small" id="lastAddedContact">—</span>
-            <span class="stat-sub" id="lastAddedPhone"></span>
+            <span class="stat-label">Last Search Time</span>
+            <span class="stat-value small" id="lastSearchTime">No searches yet</span>
         </div>
     </div>
     <div class="stat-card animate-in" style="--delay: 2">
-        <div class="stat-icon purple">🔍</div>
+        <div class="stat-icon green">🔍</div>
         <div class="stat-info">
             <span class="stat-label">Last Searched Contact</span>
             <span class="stat-value small" id="lastSearchedContact">—</span>
             <span class="stat-sub" id="lastSearchedPhone"></span>
         </div>
     </div>
-    <div class="stat-card animate-in" style="--delay: 3">
-        <div class="stat-icon gold">⚡</div>
-        <div class="stat-info">
-            <span class="stat-label">Best Search Method</span>
-            <span class="stat-value small" id="bestSearchMethod">Smart Search</span>
-        </div>
-    </div>
 </section>
 
-<section class="card animate-in" style="--delay: 4">
+<section class="card animate-in" style="--delay: 3">
     <div class="card-header">
         <h2>Quick Actions</h2>
     </div>
@@ -51,7 +48,7 @@
             <a href="{{ url_for('add_contact_page') }}" class="action-btn primary">➕ Add Contact</a>
             <a href="{{ url_for('contacts_page') }}" class="action-btn secondary">👥 View Contacts</a>
             <a href="{{ url_for('search_page') }}" class="action-btn secondary">🔍 Search Contact</a>
-            <a href="{{ url_for('performance_page') }}" class="action-btn accent">⚡ Search Speed</a>
+            <a href="{{ url_for('performance_page') }}" class="action-btn accent">📊 Performance Analysis</a>
         </div>
     </div>
 </section>

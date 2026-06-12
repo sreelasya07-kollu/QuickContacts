@@ -14,19 +14,19 @@
             <div class="search-box">
                 <span class="search-icon" aria-hidden="true">🔍</span>
                 <input type="text" id="searchInput" placeholder="Search by name or phone number..." autocomplete="off">
-                <button type="button" class="search-clear-btn" id="clearInputBtn" aria-label="Clear search">✕</button>
+                <button type="button" class="search-clear-btn" id="clearInputBtn" aria-label="Clear search" title="Clear search">✕</button>
                 <ul class="suggestions-list" id="suggestionsList"></ul>
             </div>
             <div class="search-actions">
-                <button type="button" class="btn primary" id="searchBtn">Compare Search</button>
-                <button type="button" class="btn secondary" id="clearSearchBtn">Clear</button>
+                <button type="button" class="btn primary" id="searchBtn">Search</button>
+                <button type="button" class="btn secondary" id="clearSearchBtn">Clear Search</button>
             </div>
         </div>
-        <p class="search-hint">Type a name to see suggestions, then compare how fast each search method works</p>
+        <p class="search-hint">Find contacts quickly — search efficiency details appear after results</p>
     </div>
 </section>
 
-<section class="card animate-in hidden-section" id="searchResultsSection">
+<section class="card animate-in hidden-section fade-load" id="searchResultsSection">
     <div class="card-header">
         <h2>Matching Contacts</h2>
         <span class="badge" id="resultCount">0 found</span>
@@ -36,35 +36,21 @@
     </div>
 </section>
 
-<section class="card animate-in hidden-section" id="performanceSection">
+<section class="card animate-in hidden-section fade-load" id="performanceSection">
     <div class="card-header">
-        <h2>Search Comparison</h2>
-        <span class="badge badge-soft">Speed Results</span>
+        <h2>Why Was One Search Faster?</h2>
+        <span class="badge badge-soft">Search Efficiency</span>
     </div>
     <div class="card-body">
+        <p class="section-desc comparison-intro" id="comparisonIntro"></p>
+
         <div class="comparison-grid" id="searchComparisonCards"></div>
+
         <div class="timing-results" id="timingResults"></div>
 
-        <div class="how-search-works">
-            <h3>How Search Works</h3>
-            <div class="info-grid">
-                <div class="info-card">
-                    <h4>Normal Search</h4>
-                    <p>Checks contacts one by one until a match is found.</p>
-                </div>
-                <div class="info-card highlight-card">
-                    <h4>Smart Search</h4>
-                    <p>Uses a fast lookup system to find contacts instantly.</p>
-                </div>
-                <div class="info-card">
-                    <h4>Why Smart Search is Better</h4>
-                    <p>As the number of contacts grows, Smart Search remains fast while Normal Search takes longer.</p>
-                </div>
-            </div>
-        </div>
-
         <details class="tech-details">
-            <summary>Search Speed Comparison Chart</summary>
+            <summary>View technical details (List O(n) vs Dictionary O(1))</summary>
+            <div class="tech-details-body" id="searchPerfMetrics"></div>
             <div class="chart-container chart-animate">
                 <canvas id="searchPerfChart"></canvas>
             </div>
