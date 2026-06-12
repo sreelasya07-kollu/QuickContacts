@@ -5,10 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('compareSortsBtn').addEventListener('click', compareSorts);
     document.getElementById('clearSortsBtn').addEventListener('click', clearSorting);
-
-    document.querySelectorAll('.sort-generate button').forEach(btn => {
-        btn.addEventListener('click', () => generateRandomArray(Number(btn.dataset.size)));
-    });
 });
 
 function initSortChart() {
@@ -62,16 +58,6 @@ function clearSorting() {
     if (sortChart) {
         sortChart.data.datasets[0].data = [0, 0];
         sortChart.update();
-    }
-}
-
-async function generateRandomArray(size) {
-    try {
-        const data = await apiFetch(`/api/sorting/random/${size}`);
-        document.getElementById('arrayInput').value = data.display;
-        showToast(`Generated ${data.array_size} random numbers`);
-    } catch (err) {
-        showToast(err.message, 'error');
     }
 }
 
