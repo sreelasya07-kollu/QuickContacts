@@ -1,3 +1,5 @@
+"""ContactHub backend: Flask API with list and dictionary data structures."""
+
 import time
 from datetime import datetime
 
@@ -5,8 +7,11 @@ from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
+# List stores contacts in insertion order for linear search and display.
 contacts_list = []
+# Dictionary maps contact id -> contact for direct access by id.
 contacts_dict = {}
+# Phone index maps phone number -> contact for O(1) hash lookup.
 phone_index = {}
 next_id = 1
 
