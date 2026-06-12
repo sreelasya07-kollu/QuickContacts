@@ -274,18 +274,6 @@ def measure_search_performance(query):
     )
 
 
-def generate_sample_data(count):
-    clear_contacts()
-    for index in range(1, count + 1):
-        add_contact_to_storage(
-            f"Contact {index}",
-            f"900000{index:05d}",
-            f"contact{index}@email.com",
-            "Other",
-        )
-    return len(contacts_list)
-
-
 def bubble_sort(numbers):
     """Bubble sort O(n^2): compare and swap adjacent elements."""
     data = list(numbers)
