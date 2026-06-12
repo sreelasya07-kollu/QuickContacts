@@ -387,6 +387,8 @@ def init_default_contacts():
         )
 
 
+# --- Page routes ---
+
 @app.route("/")
 def dashboard():
     return render_template("index.html", active="dashboard")
@@ -416,6 +418,8 @@ def performance_page():
 def sorting_page():
     return render_template("sorting.html", active="sorting")
 
+
+# --- Contact API ---
 
 @app.route("/api/stats")
 def api_stats():
@@ -479,6 +483,8 @@ def api_delete_contact(contact_id):
     return jsonify({"message": "Contact deleted", "contact": contact})
 
 
+# --- Search API ---
+
 @app.route("/api/search")
 def api_search():
     global last_search
@@ -529,6 +535,8 @@ def api_suggestions():
             break
     return jsonify(suggestions)
 
+
+# --- Performance & sorting API ---
 
 @app.route("/api/performance/search")
 def api_performance_search():
