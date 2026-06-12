@@ -1,11 +1,9 @@
 let barChart = null;
-let lineChart = null;
 let debounceTimer;
 let totalContacts = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
     initCharts();
-    loadReport();
     loadCurrentSize();
 
     document.getElementById('runBenchmark').addEventListener('click', runLiveBenchmark);
@@ -33,10 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!e.target.closest('.search-box')) {
             document.getElementById('perfSuggestions').classList.remove('active');
         }
-    });
-
-    document.querySelectorAll('.generate-actions button').forEach(btn => {
-        btn.addEventListener('click', () => generateSample(Number(btn.dataset.size)));
     });
 
     toggleClearButton();
@@ -75,12 +69,9 @@ function clearBenchmark() {
     document.getElementById('barChart').classList.add('hidden-section');
 
     if (barChart) {
-        barChart.data.labels = [];
-        barChart.data.datasets[0].data = [];
-        barChart.data.datasets[1].data = [];
+        barChart.data.datasets[0].data = [0, 0];
         barChart.update();
     }
-
 }
 
 async function fetchSuggestions(query) {
@@ -120,7 +111,10 @@ async function fetchSuggestions(query) {
 function initCharts() {
     if (typeof Chart === 'undefined') return;
 
-    barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
+    const barCanvas = document.getElementById('barChart');
+    if (!barCanvas) return;
+
+    barChart = new Chart(barCanvas.getContext('2d'), {
         type: 'bar',
         data: {
             labels: ['Normal Search', 'Smart Search'],
@@ -130,18 +124,6 @@ function initCharts() {
                 backgroundColor: ['rgba(59,130,246,0.75)', 'rgba(34,197,94,0.75)'],
                 borderRadius: 10,
             }],
-        },
-        options: chartOptions('Execution Time (ms)'),
-    });
-
-    lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                { label: 'Normal Search', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.15)', fill: true, tension: 0.3 },
-                { label: 'Smart Search', data: [], borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.15)', fill: true, tension: 0.3 },
-            ],
         },
         options: chartOptions('Execution Time (ms)'),
     });
@@ -164,47 +146,7 @@ async function loadCurrentSize() {
     try {
         const stats = await apiFetch('/api/stats');
         totalContacts = stats.total_contacts;
-        document.getElementById('currentDataSize').textContent = `Current contacts: ${totalContacts}`;
         setBenchmarkEnabled(totalContacts > 0);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-async function generateSample(size) {
-    try {
-        const data = await apiFetch(`/api/generate/${size}`, { method: 'POST' });
-        showToast(data.message);
-        await loadCurrentSize();
-        await loadReport();
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-async function loadReport() {
-    try {
-        const report = await apiFetch('/api/performance/report');
-        document.getElementById('reportBody').innerHTML = report.map(row => {
-            const { normalMs, smartMs } = getPerformanceTimes(row);
-            return `
-                <tr>
-                    <td><strong>${row.data_size}</strong></td>
-                    <td>${formatSearchTime(normalMs)}</td>
-                    <td>${formatSearchTime(smartMs)}</td>
-                    <td>${row.contacts_checked}</td>
-                    <td>${row.lookups_performed}</td>
-                    <td>${escapeHtml(row.best_search_method || row.faster_method || row.faster)}</td>
-                </tr>
-            `;
-        }).join('');
-
-        if (lineChart) {
-            lineChart.data.labels = report.map(r => r.data_size.toString());
-            lineChart.data.datasets[0].data = report.map(r => Number(getPerformanceTimes(r).normalMs) || 0);
-            lineChart.data.datasets[1].data = report.map(r => Number(getPerformanceTimes(r).smartMs) || 0);
-            lineChart.update();
-        }
     } catch (err) {
         showToast(err.message, 'error');
     }
@@ -278,7 +220,7 @@ async function runLiveBenchmark() {
     }
 
     if (!totalContacts) {
-        showToast('No contacts available. Generate sample contacts first.', 'error');
+        showToast('No contacts available. Add contacts first.', 'error');
         return;
     }
 

@@ -31,7 +31,7 @@
             </div>
         </div>
         <p class="no-contacts-msg hidden-section" id="noContactsMsg">
-            No contacts available. Add contacts or generate sample contacts to compare search speed.
+            No contacts available. Add contacts to compare search speed.
         </p>
     </div>
 </section>
@@ -68,54 +68,6 @@
     <div class="card-body chart-container chart-animate">
         <p class="chart-placeholder" id="barChartPlaceholder">Run a search comparison to view results.</p>
         <canvas id="barChart" class="hidden-section"></canvas>
-    </div>
-</section>
-
-<section class="card animate-in">
-    <div class="card-header">
-        <h2>Grow Your Contact List</h2>
-        <span class="badge badge-soft">Optional</span>
-    </div>
-    <div class="card-body">
-        <p class="section-desc">Generate sample contacts to see how search speed changes as your list gets bigger.</p>
-        <div class="generate-actions">
-            <button class="btn primary" data-size="100">Generate 100 Contacts</button>
-            <button class="btn primary" data-size="1000">Generate 1000 Contacts</button>
-            <button class="btn primary" data-size="5000">Generate 5000 Contacts</button>
-        </div>
-        <p class="contact-count" id="currentDataSize">Current contacts: 0</p>
-    </div>
-</section>
-
-<section class="card animate-in">
-    <div class="card-header">
-        <h2>Search Speed vs List Size</h2>
-    </div>
-    <div class="card-body chart-container">
-        <canvas id="lineChart"></canvas>
-    </div>
-</section>
-
-<section class="card animate-in">
-    <div class="card-header">
-        <h2>Speed Report</h2>
-    </div>
-    <div class="card-body table-wrapper">
-        <table class="contacts-table">
-            <thead>
-                <tr>
-                    <th>Contacts</th>
-                    <th>Normal Search</th>
-                    <th>Smart Search</th>
-                    <th>Contacts Checked</th>
-                    <th>Lookups</th>
-                    <th>Best Method</th>
-                </tr>
-            </thead>
-            <tbody id="reportBody">
-                <tr><td colspan="6" class="empty-state">Loading speed report...</td></tr>
-            </tbody>
-        </table>
     </div>
 </section>
 

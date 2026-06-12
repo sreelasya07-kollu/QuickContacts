@@ -1,4 +1,3 @@
-import random
 import time
 from datetime import datetime
 
@@ -12,7 +11,7 @@ phone_index = {}
 next_id = 1
 
 SAMPLE_SIZES = [100, 1000, 5000, 10000]
-SORT_ARRAY_SIZES = [100, 500, 1000]
+SORT_ARRAY_MAX_SIZE = 2000
 CATEGORIES = ["Family", "Friends", "Work", "Other"]
 
 last_added = {"name": "", "phone": "", "category": "", "added_at": ""}
@@ -550,24 +549,11 @@ def api_sorting_compare():
 
     try:
         numbers = parse_number_array(raw_numbers)
-        if len(numbers) > 2000:
-            return jsonify({"error": "Maximum array size is 2000 numbers."}), 400
+        if len(numbers) > SORT_ARRAY_MAX_SIZE:
+            return jsonify({"error": f"Maximum array size is {SORT_ARRAY_MAX_SIZE} numbers."}), 400
         return jsonify(compare_sort_algorithms(numbers))
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
-
-
-@app.route("/api/sorting/random/<int:count>")
-def api_sorting_random(count):
-    if count not in SORT_ARRAY_SIZES:
-        return jsonify({"error": "Supported sizes: 100, 500, 1000"}), 400
-
-    numbers = [random.randint(1, 10000) for _ in range(count)]
-    return jsonify({
-        "numbers": numbers,
-        "array_size": count,
-        "display": ", ".join(str(n) for n in numbers),
-    })
 
 
 init_default_contacts()
