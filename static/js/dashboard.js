@@ -4,18 +4,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('totalContacts').textContent = stats.total_contacts;
 
-        const added = stats.last_added || {};
-        document.getElementById('lastAddedContact').textContent = added.name || '—';
-        document.getElementById('lastAddedPhone').textContent =
-            added.phone ? `📞 ${added.phone}` : '';
+        const lastSearch = stats.last_search || {};
+        document.getElementById('lastSearchTime').textContent =
+            formatDateTime(lastSearch.searched_at);
 
-        const searched = stats.last_search || {};
-        document.getElementById('lastSearchedContact').textContent = searched.name || '—';
-        document.getElementById('lastSearchedPhone').textContent =
-            searched.phone && searched.phone !== '—' ? `📞 ${searched.phone}` : '';
+        const contactEl = document.getElementById('lastSearchedContact');
+        const phoneEl = document.getElementById('lastSearchedPhone');
 
-        document.getElementById('bestSearchMethod').textContent =
-            stats.best_search_method || 'Smart Search';
+        if (lastSearch.contact_name && lastSearch.query) {
+            contactEl.textContent = lastSearch.contact_name;
+            phoneEl.textContent = lastSearch.contact_phone
+                ? `📞 ${lastSearch.contact_phone}`
+                : '';
+        } else {
+            contactEl.textContent = '—';
+            phoneEl.textContent = '';
+        }
     } catch (err) {
         showToast(err.message, 'error');
     }
