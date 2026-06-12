@@ -149,6 +149,7 @@ def build_temp_contacts(size):
 
 
 def benchmark_temp_size(size):
+    """Measure search times for a temporary dataset of the given size."""
     temp_list, temp_phone = build_temp_contacts(size)
     target_phone = temp_list[-1]["phone"]
 
@@ -240,6 +241,7 @@ def build_timing_result(
 
 
 def measure_search_performance(query):
+    """Benchmark list search vs dictionary lookup using time.perf_counter."""
     if not contacts_list:
         return build_timing_result(0, 0, 0, 0, query=query)
 
@@ -285,6 +287,7 @@ def generate_sample_data(count):
 
 
 def bubble_sort(numbers):
+    """Bubble sort O(n^2): compare and swap adjacent elements."""
     data = list(numbers)
     length = len(data)
     for i in range(length):
@@ -311,6 +314,7 @@ def merge(left, right):
 
 
 def merge_sort(numbers):
+    """Merge sort O(n log n): divide array, sort halves, then merge."""
     if len(numbers) <= 1:
         return list(numbers)
     middle = len(numbers) // 2
@@ -339,6 +343,7 @@ def parse_number_array(raw_value):
 
 
 def compare_sort_algorithms(numbers):
+    """Run bubble sort and merge sort on copies and return timing results."""
     bubble_data = list(numbers)
     merge_data = list(numbers)
 
