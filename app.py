@@ -391,6 +391,7 @@ def init_default_contacts():
 
 @app.route("/")
 def dashboard():
+    """Render the dashboard home page."""
     return render_template("index.html", active="dashboard")
 
 
@@ -402,6 +403,12 @@ def add_contact_page():
 @app.route("/contacts")
 def contacts_page():
     return render_template("contacts.html", active="contacts")
+
+
+@app.route("/favorites")
+def favorites_page():
+    """Render the favorites page."""
+    return render_template("contacts.html", active="favorites")
 
 
 @app.route("/search")
@@ -416,6 +423,7 @@ def performance_page():
 
 @app.route("/sorting")
 def sorting_page():
+    """Render the bubble sort vs merge sort analyzer page."""
     return render_template("sorting.html", active="sorting")
 
 
@@ -548,6 +556,7 @@ def api_performance_search():
 
 @app.route("/api/sorting/compare", methods=["POST"])
 def api_sorting_compare():
+    """Compare bubble sort and merge sort execution times for a number array."""
     data = request.get_json(silent=True) or {}
     raw_numbers = data.get("numbers", "")
 
@@ -562,5 +571,7 @@ def api_sorting_compare():
 
 init_default_contacts()
 
+
 if __name__ == "__main__":
+    # Run the development server for local testing and demos.
     app.run(debug=False, port=5001)
