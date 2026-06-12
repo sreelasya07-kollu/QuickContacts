@@ -44,18 +44,18 @@
                     <span class="nav-icon">🔍</span>
                     <span>Search</span>
                 </a>
-                <a href="{{ url_for('favorites_page') }}" class="nav-item {% if active == 'favorites' %}active{% endif %}">
-                    <span class="nav-icon">⭐</span>
-                    <span>Favorites</span>
-                </a>
                 <a href="{{ url_for('performance_page') }}" class="nav-item {% if active == 'performance' %}active{% endif %}">
                     <span class="nav-icon">📊</span>
                     <span>Performance</span>
                 </a>
+                <a href="{{ url_for('sorting_page') }}" class="nav-item {% if active == 'sorting' %}active{% endif %}">
+                    <span class="nav-icon">🔢</span>
+                    <span>Sort</span>
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <p>Data Structures Demo</p>
-                <small>List · Dictionary</small>
+                <small>List · Dictionary · Bubble · Merge</small>
             </div>
         </aside>
 

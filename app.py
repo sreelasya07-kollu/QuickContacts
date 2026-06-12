@@ -1,5 +1,6 @@
 """ContactHub backend: Flask API with list and dictionary data structures."""
 
+import math
 import time
 from datetime import datetime
 
@@ -23,12 +24,12 @@ last_search = {"name": "", "phone": "", "category": "", "searched_at": ""}
 best_search_method = "Smart Search"
 
 DEFAULT_CONTACTS = [
-    {"name": "Sree Lasya Kollu", "phone": "9876543210", "email": "lasya@email.com", "category": "Family"},
-    {"name": "Siddu Kumar", "phone": "9123456780", "email": "siddu@email.com", "category": "Friends"},
-    {"name": "Rajesh Patel", "phone": "9988776655", "email": "rajesh@work.com", "category": "Work"},
-    {"name": "Ananya Sharma", "phone": "8765432109", "email": "ananya@email.com", "category": "Family"},
-    {"name": "Vikram Reddy", "phone": "7654321098", "email": "vikram@company.com", "category": "Work"},
+    {"name": "Rajesh", "phone": "9988776655", "email": "rajesh@email.com", "category": "Work"},
+    {"name": "Priya", "phone": "9876543210", "email": "priya@email.com", "category": "Family"},
+    {"name": "Amit", "phone": "9123456780", "email": "amit@email.com", "category": "Friends"},
 ]
+
+DEFAULT_SORT_NUMBERS = [23, 11, 45, 6, 90, 12]
 
 
 def friendly_faster(list_time, dict_time):
@@ -108,26 +109,41 @@ def update_contact_in_storage(contact_id, data):
     return contact
 
 
-def search_list_linear(query):
-    """Linear search O(n): scan the contact list one by one."""
-    query_lower = query.lower()
-    comparisons = 0
-    results = []
+def linear_search(name):
+    """Linear search O(n): scan contacts_list for an exact name match."""
+    for contact in contacts_list:
+        if contact["name"].lower() == name.lower():
+            return contact
+    return None
 
+
+def linear_search_with_stats(name):
+    """Linear search with comparison count for performance benchmarking."""
+    comparisons = 0
     for contact in contacts_list:
         comparisons += 1
-        if query_lower in contact["name"].lower() or query in contact["phone"]:
-            results.append(contact)
+        if contact["name"].lower() == name.lower():
+            return contact, comparisons
+    return None, comparisons
 
-    return results, comparisons
+
+def smart_search(phone):
+    """Dictionary search O(1): find a contact by phone using phone_index."""
+    return phone_index.get(phone)
 
 
-def search_dict_by_phone(phone):
-    """Hash lookup O(1): find a contact by phone using the phone index."""
-    comparisons = 1
-    contact = phone_index.get(phone)
-    results = [contact] if contact else []
-    return results, comparisons
+def search_contacts(query):
+    """Search by phone (smart) or by name (linear), matching the reference logic."""
+    query = query.strip()
+    if not query:
+        return []
+
+    if query in phone_index:
+        contact = smart_search(query)
+        return [contact] if contact else []
+
+    contact = linear_search(query)
+    return [contact] if contact else []
 
 
 def build_temp_contacts(size):
@@ -154,11 +170,13 @@ def benchmark_temp_size(size):
     temp_list, temp_phone = build_temp_contacts(size)
     target_phone = temp_list[-1]["phone"]
 
+    target_name = temp_list[-1]["name"]
+
     list_start = time.perf_counter()
     list_comparisons = 0
     for contact in temp_list:
         list_comparisons += 1
-        if contact["phone"] == target_phone:
+        if contact["name"].lower() == target_name.lower():
             break
     list_time = time.perf_counter() - list_start
 
@@ -245,27 +263,33 @@ def build_timing_result(
 
 
 def measure_search_performance(query):
-    """Benchmark list search vs dictionary lookup using time.perf_counter."""
+    """Benchmark linear search vs dictionary search using time.perf_counter."""
     if not contacts_list:
         return build_timing_result(0, 0, 0, 0, query=query)
 
     iterations = benchmark_iterations()
 
     list_start = time.perf_counter()
-    list_results, list_comparisons = search_list_linear(query)
+    list_contact, list_comparisons = linear_search_with_stats(query)
     for _ in range(iterations - 1):
-        list_results, list_comparisons = search_list_linear(query)
+        list_contact, list_comparisons = linear_search_with_stats(query)
     list_time = (time.perf_counter() - list_start) / iterations
 
-    phone_target = query
-    if phone_target not in phone_index and list_results:
-        phone_target = list_results[0]["phone"]
+    phone_target = query if query in phone_index else None
+    if not phone_target and list_contact:
+        phone_target = list_contact["phone"]
+    elif not phone_target:
+        phone_target = query
 
     dict_start = time.perf_counter()
-    dict_results, dict_comparisons = search_dict_by_phone(phone_target)
+    dict_contact = smart_search(phone_target) if phone_target else None
+    dict_comparisons = 1
     for _ in range(iterations - 1):
-        dict_results, dict_comparisons = search_dict_by_phone(phone_target)
+        dict_contact = smart_search(phone_target) if phone_target else None
     dict_time = (time.perf_counter() - dict_start) / iterations
+
+    list_results = [list_contact] if list_contact else []
+    dict_results = [dict_contact] if dict_contact else []
 
     return build_timing_result(
         list_time,
@@ -278,42 +302,43 @@ def measure_search_performance(query):
     )
 
 
-def bubble_sort(numbers):
-    """Bubble sort O(n^2): compare and swap adjacent elements."""
-    data = list(numbers)
-    length = len(data)
-    for i in range(length):
-        for j in range(length - i - 1):
-            if data[j] > data[j + 1]:
-                data[j], data[j + 1] = data[j + 1], data[j]
-    return data
+def bubble_sort(arr):
+    """Bubble sort O(n²): compare and swap adjacent elements."""
+    arr = arr.copy()
+    n = len(arr)
+
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+
+    return arr
 
 
-def merge(left, right):
-    """Merge two sorted lists into one sorted list."""
-    result = []
-    left_index = 0
-    right_index = 0
-    while left_index < len(left) and right_index < len(right):
-        if left[left_index] <= right[right_index]:
-            result.append(left[left_index])
-            left_index += 1
-        else:
-            result.append(right[right_index])
-            right_index += 1
-    result.extend(left[left_index:])
-    result.extend(right[right_index:])
-    return result
-
-
-def merge_sort(numbers):
+def merge_sort(arr):
     """Merge sort O(n log n): divide array, sort halves, then merge."""
-    if len(numbers) <= 1:
-        return list(numbers)
-    middle = len(numbers) // 2
-    left_half = merge_sort(numbers[:middle])
-    right_half = merge_sort(numbers[middle:])
-    return merge(left_half, right_half)
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+
+    return result
 
 
 def parse_number_array(raw_value):
@@ -338,15 +363,12 @@ def parse_number_array(raw_value):
 
 def compare_sort_algorithms(numbers):
     """Run bubble sort and merge sort on copies and return timing results."""
-    bubble_data = list(numbers)
-    merge_data = list(numbers)
-
     bubble_start = time.perf_counter()
-    bubble_sorted = bubble_sort(bubble_data)
+    bubble_sorted = bubble_sort(numbers)
     bubble_time = time.perf_counter() - bubble_start
 
     merge_start = time.perf_counter()
-    merge_sorted = merge_sort(merge_data)
+    merge_sorted = merge_sort(numbers)
     merge_time = time.perf_counter() - merge_start
 
     bubble_ms = round(bubble_time * 1000, 6)
@@ -359,10 +381,14 @@ def compare_sort_algorithms(numbers):
         faster = "Bubble Sort"
         difference_ms = round((merge_time - bubble_time) * 1000, 6)
 
+    n = len(numbers)
+    bubble_theoretical_ops = n ** 2
+    merge_theoretical_ops = max(1, int(n * math.log2(n))) if n > 1 else 1
+
     return {
         "original_array": numbers,
         "sorted_array": bubble_sorted,
-        "array_size": len(numbers),
+        "array_size": n,
         "bubble_sort_time_ms": bubble_ms,
         "merge_sort_time_ms": merge_ms,
         "bubble_sort_execution_time": bubble_ms,
@@ -371,6 +397,8 @@ def compare_sort_algorithms(numbers):
         "performance_difference_ms": difference_ms,
         "bubble_complexity": "O(n²)",
         "merge_complexity": "O(n log n)",
+        "bubble_theoretical_ops": bubble_theoretical_ops,
+        "merge_theoretical_ops": merge_theoretical_ops,
         "sorted_match": bubble_sorted == merge_sorted,
     }
 
@@ -403,12 +431,6 @@ def add_contact_page():
 @app.route("/contacts")
 def contacts_page():
     return render_template("contacts.html", active="contacts")
-
-
-@app.route("/favorites")
-def favorites_page():
-    """Render the favorites page."""
-    return render_template("contacts.html", active="favorites")
 
 
 @app.route("/search")
@@ -501,7 +523,7 @@ def api_search():
         return jsonify({"results": [], "performance": None})
 
     performance = measure_search_performance(query)
-    results, _ = search_list_linear(query)
+    results = search_contacts(query)
 
     if results:
         contact = results[0]

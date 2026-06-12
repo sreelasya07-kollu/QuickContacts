@@ -20,7 +20,7 @@
         <div class="performance-controls">
             <div class="form-group">
                 <label for="perfQuery">Search Query</label>
-                <input type="text" id="perfQuery" placeholder="Enter a name or phone number" value="a">
+                <input type="text" id="perfQuery" placeholder="Enter a name or phone number">
             </div>
             <button class="btn primary" id="runBenchmark">Run Benchmark</button>
         </div>
@@ -37,6 +37,94 @@
     </div>
     <div class="card-body chart-container chart-animate">
         <canvas id="performanceChart"></canvas>
+    </div>
+</section>
+
+<section class="card animate-in">
+    <div class="card-header">
+        <h2>Sorting Benchmark</h2>
+        <span class="badge badge-soft">Bubble vs Merge</span>
+    </div>
+    <div class="card-body">
+        <p class="section-desc">
+            Enter numbers manually to compare Bubble Sort and Merge Sort execution times measured in Python.
+        </p>
+        <div class="form-group">
+            <label for="sortArrayInput">Numbers separated by commas</label>
+            <textarea id="sortArrayInput" rows="3" placeholder="23, 11, 45, 6, 90, 12"></textarea>
+            <p class="input-hint">Example: 23, 11, 45, 6, 90, 12</p>
+        </div>
+        <div class="sort-actions">
+            <button type="button" class="btn primary" id="compareSortsPerf">Compare Sorts</button>
+            <button type="button" class="btn secondary" id="clearSortsPerf">Clear</button>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in hidden-section fade-load" id="sortPerfInfoSection">
+    <div class="card-header">
+        <h2>Array Details</h2>
+    </div>
+    <div class="card-body">
+        <div class="array-info-grid">
+            <div class="array-info-item">
+                <span class="array-info-label">Array Size</span>
+                <span class="array-info-value" id="sortPerfArraySize">0</span>
+            </div>
+            <div class="array-info-item full-width">
+                <span class="array-info-label">Original Array</span>
+                <p class="array-display" id="sortPerfOriginal">—</p>
+            </div>
+            <div class="array-info-item full-width">
+                <span class="array-info-label">Sorted Array</span>
+                <p class="array-display sorted" id="sortPerfSorted">—</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in" id="sortPerfResultsSection">
+    <div class="card-header">
+        <h2>Bubble Sort vs Merge Sort</h2>
+        <span class="badge badge-soft">Execution Times</span>
+    </div>
+    <div class="card-body">
+        <div class="search-method-grid">
+            <div class="method-card bubble-card">
+                <h4>🫧 Bubble Sort</h4>
+                <ul class="method-stats">
+                    <li><span>Time Complexity</span><strong id="perfBubbleComplexity">O(n²)</strong></li>
+                    <li><span>Execution Time</span><strong class="time-value" id="perfBubbleTime">—</strong></li>
+                </ul>
+            </div>
+            <div class="method-card merge-card">
+                <h4>🔀 Merge Sort</h4>
+                <ul class="method-stats">
+                    <li><span>Time Complexity</span><strong id="perfMergeComplexity">O(n log n)</strong></li>
+                    <li><span>Execution Time</span><strong class="time-value" id="perfMergeTime">—</strong></li>
+                </ul>
+            </div>
+        </div>
+        <div class="winner-card" id="sortPerfWinner">
+            <div class="winner-inner">
+                <span class="winner-icon">🏆</span>
+                <div>
+                    <p class="winner-label">Faster Algorithm</p>
+                    <h4 class="winner-name" id="perfSortWinnerName">Enter numbers and compare</h4>
+                    <p class="winner-desc" id="perfSortWinnerDesc">Click Compare Sorts to measure Bubble Sort and Merge Sort.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in" id="sortPerfChartSection">
+    <div class="card-header">
+        <h2>Sort Execution Time Comparison</h2>
+    </div>
+    <div class="card-body chart-container chart-animate">
+        <p class="chart-placeholder" id="sortPerfChartPlaceholder">Click Compare Sorts to view the execution time graph.</p>
+        <canvas id="sortPerfChart" class="hidden-section"></canvas>
     </div>
 </section>
 

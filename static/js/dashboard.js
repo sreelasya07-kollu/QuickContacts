@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const contactEl = document.getElementById('lastSearchedContact');
         const phoneEl = document.getElementById('lastSearchedPhone');
 
-        if (lastSearch.contact_name && lastSearch.query) {
-            contactEl.textContent = lastSearch.contact_name;
-            phoneEl.textContent = lastSearch.contact_phone
-                ? `📞 ${lastSearch.contact_phone}`
+        if (lastSearch.name && lastSearch.name !== 'No match found') {
+            contactEl.textContent = lastSearch.name;
+            phoneEl.textContent = lastSearch.phone && lastSearch.phone !== '—'
+                ? `📞 ${lastSearch.phone}`
                 : '';
         } else {
             contactEl.textContent = '—';

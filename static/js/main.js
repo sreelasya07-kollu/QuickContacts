@@ -101,3 +101,60 @@ function formatDateTime(value) {
     if (!value) return 'No searches yet';
     return value;
 }
+
+function formatSearchTime(ms) {
+    const value = Number(ms);
+    if (!Number.isFinite(value)) return '—';
+    if (value === 0) return '0 ms';
+    if (value < 0.001) return '< 0.001 ms';
+    if (value < 1) return `${value.toFixed(3)} ms`;
+    return `${value.toFixed(3)} ms`;
+}
+
+function getInitials(name) {
+    return (name || '')
+        .split(' ')
+        .filter(Boolean)
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || '?';
+}
+
+function emptyState(icon, title, description, actionHtml = '') {
+    return `
+        <div class="empty-state-box">
+            <span class="empty-state-icon">${icon}</span>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(description)}</p>
+            ${actionHtml}
+        </div>
+    `;
+}
+
+function renderContactCard(contact, showActions = false) {
+    const actions = showActions ? `
+        <div class="card-footer">
+            <span class="contact-id">#${contact.id}</span>
+            <div class="card-actions">
+                <button type="button" class="btn-icon" onclick="openEditModal(${contact.id})" title="Edit">✏️</button>
+                <button type="button" class="btn-icon danger" onclick="deleteContact(${contact.id})" title="Delete">🗑️</button>
+            </div>
+        </div>
+    ` : '';
+
+    return `
+        <div class="contact-card fade-load">
+            <div class="contact-card-header">
+                <div class="contact-avatar">${getInitials(contact.name)}</div>
+                <div>
+                    <h3>${escapeHtml(contact.name)}</h3>
+                    ${contact.category ? getCategoryTag(contact.category) : ''}
+                </div>
+            </div>
+            <p>📞 ${escapeHtml(contact.phone)}</p>
+            <p>✉️ ${escapeHtml(contact.email)}</p>
+            ${actions}
+        </div>
+    `;
+}

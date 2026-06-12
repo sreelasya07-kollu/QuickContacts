@@ -1,8 +1,18 @@
 let performanceChart = null;
+let sortPerfChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
     document.getElementById('runBenchmark').addEventListener('click', runBenchmark);
+    document.getElementById('compareSortsPerf').addEventListener('click', compareSortsPerf);
+    document.getElementById('clearSortsPerf').addEventListener('click', clearSortsPerf);
+
+    document.getElementById('sortArrayInput')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            compareSortsPerf();
+        }
+    });
 });
 
 function initChart() {
@@ -26,29 +36,69 @@ function initChart() {
                 borderRadius: 10,
             }],
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 700, easing: 'easeOutQuart' },
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: { display: true, text: 'Execution Time (ms)', color: tickColor },
-                    ticks: { color: tickColor },
-                    grid: { color: gridColor },
-                },
-                x: {
-                    ticks: { color: tickColor },
-                    grid: { display: false },
-                },
-            },
-        },
+        options: chartOptions('Execution Time (ms)', tickColor, gridColor),
     });
 }
 
+function chartOptions(yLabel, tickColor, gridColor) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 700, easing: 'easeOutQuart' },
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: yLabel, color: tickColor },
+                ticks: { color: tickColor },
+                grid: { color: gridColor },
+            },
+            x: {
+                ticks: { color: tickColor },
+                grid: { display: false },
+            },
+        },
+    };
+}
+
+function initSortPerfChart() {
+    if (sortPerfChart || typeof Chart === 'undefined') return;
+
+    const canvas = document.getElementById('sortPerfChart');
+    if (!canvas) return;
+
+    const isDark = getTheme() === 'dark';
+    const tickColor = isDark ? '#9aa0b4' : '#64748b';
+    const gridColor = isDark ? 'rgba(45, 51, 72, 0.5)' : 'rgba(148, 163, 184, 0.35)';
+
+    sortPerfChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Bubble Sort', 'Merge Sort'],
+            datasets: [{
+                label: 'Execution Time (ms)',
+                data: [0, 0],
+                backgroundColor: ['rgba(249, 115, 22, 0.75)', 'rgba(34, 197, 94, 0.75)'],
+                borderRadius: 10,
+            }],
+        },
+        options: chartOptions('Execution Time (ms)', tickColor, gridColor),
+    });
+}
+
+function formatArrayDisplay(numbers, maxShow = 80) {
+    if (!numbers || !numbers.length) return '—';
+    const text = numbers.join(', ');
+    if (numbers.length <= maxShow) return text;
+    return `${numbers.slice(0, maxShow).join(', ')}, … (+${numbers.length - maxShow} more)`;
+}
+
 async function runBenchmark() {
-    const query = document.getElementById('perfQuery').value.trim() || 'a';
+    const query = document.getElementById('perfQuery').value.trim();
+    if (!query) {
+        showToast('Enter a contact name to compare search speed', 'error');
+        return;
+    }
 
     try {
         const data = await apiFetch(`/api/performance/search?q=${encodeURIComponent(query)}`);
@@ -114,9 +164,85 @@ async function runBenchmark() {
             performanceChart.update('active');
         }
 
-        showToast('Benchmark completed!');
+        showToast('Search benchmark completed!');
     } catch (err) {
         showToast(err.message, 'error');
+    }
+}
+
+async function compareSortsPerf() {
+    const numbers = document.getElementById('sortArrayInput').value.trim();
+    if (!numbers) {
+        showToast('Enter numbers separated by commas', 'error');
+        return;
+    }
+
+    try {
+        const data = await apiFetch('/api/sorting/compare', {
+            method: 'POST',
+            body: JSON.stringify({ numbers }),
+        });
+        renderSortPerfResults(data);
+        showToast('Sort comparison complete!');
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+function renderSortPerfResults(data) {
+    const bubbleTime = formatSearchTime(data.bubble_sort_time_ms);
+    const mergeTime = formatSearchTime(data.merge_sort_time_ms);
+    const bubbleMs = Number(data.bubble_sort_time_ms) || 0;
+    const mergeMs = Number(data.merge_sort_time_ms) || 0;
+    const diffTime = formatSearchTime(data.performance_difference_ms);
+    const faster = data.faster_algorithm || '—';
+    const bubbleWins = faster === 'Bubble Sort';
+
+    document.getElementById('sortPerfArraySize').textContent = data.array_size;
+    document.getElementById('sortPerfOriginal').textContent = formatArrayDisplay(data.original_array);
+    document.getElementById('sortPerfSorted').textContent = formatArrayDisplay(data.sorted_array);
+    document.getElementById('perfBubbleTime').textContent = bubbleTime;
+    document.getElementById('perfMergeTime').textContent = mergeTime;
+    document.getElementById('perfBubbleComplexity').textContent = data.bubble_complexity || 'O(n²)';
+    document.getElementById('perfMergeComplexity').textContent = data.merge_complexity || 'O(n log n)';
+    document.getElementById('perfSortWinnerName').textContent = faster;
+    document.getElementById('perfSortWinnerDesc').innerHTML =
+        `Performance difference: <strong>${diffTime}</strong> faster than the other algorithm.`;
+
+    document.querySelector('#sortPerfResultsSection .bubble-card')?.classList.toggle('winner', bubbleWins);
+    document.querySelector('#sortPerfResultsSection .merge-card')?.classList.toggle('winner', !bubbleWins);
+
+    document.getElementById('sortPerfInfoSection').classList.remove('hidden-section');
+    document.getElementById('sortPerfInfoSection').classList.add('fade-load');
+    document.getElementById('sortPerfChartPlaceholder').classList.add('hidden-section');
+    document.getElementById('sortPerfChart').classList.remove('hidden-section');
+
+    initSortPerfChart();
+    if (sortPerfChart) {
+        sortPerfChart.data.datasets[0].data = [bubbleMs, mergeMs];
+        sortPerfChart.update('active');
+        requestAnimationFrame(() => sortPerfChart.resize());
+    }
+}
+
+function clearSortsPerf() {
+    document.getElementById('sortArrayInput').value = '';
+    document.getElementById('sortPerfInfoSection').classList.add('hidden-section');
+    document.getElementById('perfBubbleTime').textContent = '—';
+    document.getElementById('perfMergeTime').textContent = '—';
+    document.getElementById('perfBubbleComplexity').textContent = 'O(n²)';
+    document.getElementById('perfMergeComplexity').textContent = 'O(n log n)';
+    document.getElementById('perfSortWinnerName').textContent = 'Enter numbers and compare';
+    document.getElementById('perfSortWinnerDesc').textContent =
+        'Click Compare Sorts to measure Bubble Sort and Merge Sort.';
+    document.querySelector('#sortPerfResultsSection .bubble-card')?.classList.remove('winner');
+    document.querySelector('#sortPerfResultsSection .merge-card')?.classList.remove('winner');
+    document.getElementById('sortPerfChartPlaceholder').classList.remove('hidden-section');
+    document.getElementById('sortPerfChart').classList.add('hidden-section');
+
+    if (sortPerfChart) {
+        sortPerfChart.data.datasets[0].data = [0, 0];
+        sortPerfChart.update();
     }
 }
 

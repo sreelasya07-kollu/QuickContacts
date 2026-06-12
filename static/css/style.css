@@ -953,6 +953,111 @@ body.theme-transition * {
     gap: 16px;
 }
 
+.contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.empty-state-box {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+}
+
+.empty-state-box .empty-state-icon {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.empty-state-box h3 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.empty-state-box p {
+    margin-bottom: 16px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-icon:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.btn-icon.danger:hover {
+    border-color: var(--danger, #ef4444);
+}
+
+.contact-id {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.complexity-output {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.complexity-output h3 {
+    font-size: 1rem;
+    margin-bottom: 16px;
+}
+
+.complexity-output-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.complexity-output-item {
+    padding: 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-hover);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.complexity-output-item .complexity-algo {
+    font-weight: 600;
+}
+
+.complexity-output-item .complexity-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.complexity-output-item .complexity-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.complexity-summary {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
 .contact-card {
     background: var(--bg-hover);
     border: 1px solid var(--border);
@@ -1053,6 +1158,34 @@ body.theme-transition * {
 .chart-container {
     position: relative;
     height: 350px;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.chart-box {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+}
+
+.chart-box-title {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.chart-box-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.chart-box .chart-container {
+    height: 300px;
 }
 
 .info-grid {

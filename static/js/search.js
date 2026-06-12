@@ -101,7 +101,6 @@ async function fetchSuggestions(query) {
                 document.getElementById('searchInput').value = li.dataset.name;
                 toggleClearButton();
                 suggestionsList.classList.remove('active');
-                performSearch(li.dataset.name);
             });
         });
 
@@ -163,7 +162,8 @@ function renderPerformanceMetrics(performance) {
     section.classList.remove('hidden-section');
     section.classList.add('fade-load');
 
-    document.getElementById('comparisonIntro').textContent = performance.faster_explanation;
+    document.getElementById('comparisonIntro').textContent =
+        performance.winner_message || performance.faster_explanation || '';
 
     document.getElementById('searchComparisonCards').innerHTML = `
         <div class="compare-card normal-search">

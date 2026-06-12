@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Sorting Speed Analyzer{% endblock %}
-{% block page_title %}Sorting Speed Analyzer{% endblock %}
+{% block title %}Sort{% endblock %}
+{% block page_title %}Sort — Bubble vs Merge{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -20,12 +20,38 @@
     <div class="card-body">
         <div class="form-group">
             <label for="arrayInput">Numbers separated by commas</label>
-            <textarea id="arrayInput" rows="3" placeholder="23, 11, 45, 6, 90, 12"></textarea>
-            <p class="input-hint">Example: 23, 11, 45, 6, 90, 12</p>
+            <textarea id="arrayInput" rows="3" placeholder="Enter numbers manually, e.g. 23, 11, 45, 6, 90, 12"></textarea>
+            <p class="input-hint">Type your own numbers separated by commas, then click <strong>Compare Sorts</strong>.</p>
         </div>
         <div class="sort-actions">
             <button type="button" class="btn primary" id="compareSortsBtn">Compare Sorts</button>
             <button type="button" class="btn secondary" id="clearSortsBtn">Clear</button>
+        </div>
+    </div>
+</section>
+
+<section class="card animate-in" id="sortChartSection">
+    <div class="card-header">
+        <h2>Bubble Sort vs Merge Sort — Graphs</h2>
+        <span class="badge badge-soft">Visual Comparison</span>
+    </div>
+    <div class="card-body">
+        <p class="chart-placeholder" id="sortChartPlaceholder">Click <strong>Compare Sorts</strong> to generate the graphs below.</p>
+        <div class="chart-grid hidden-section" id="sortChartGrid">
+            <div class="chart-box">
+                <h3 class="chart-box-title">⏱️ Execution Time (ms)</h3>
+                <p class="chart-box-desc">Measured Python runtime for each algorithm</p>
+                <div class="chart-container chart-animate">
+                    <canvas id="sortTimeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h3 class="chart-box-title">📈 Time Complexity — O(n²) vs O(n log n)</h3>
+                <p class="chart-box-desc">Theoretical operations for n = <span id="chartArraySize">0</span> elements</p>
+                <div class="chart-container chart-animate">
+                    <canvas id="sortComplexityChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -52,25 +78,58 @@
     </div>
 </section>
 
-<section class="card animate-in hidden-section" id="sortResultsSection">
+<section class="card animate-in" id="sortResultsSection">
     <div class="card-header">
         <h2>Bubble Sort vs Merge Sort</h2>
         <span class="badge badge-soft">Comparison Results</span>
     </div>
     <div class="card-body">
-        <div class="search-method-grid" id="sortMethodGrid"></div>
+        <div class="search-method-grid" id="sortMethodGrid">
+            <div class="method-card bubble-card">
+                <h4>🫧 Bubble Sort</h4>
+                <ul class="method-stats">
+                    <li><span>Time Complexity</span><strong id="bubbleComplexityValue">O(n²)</strong></li>
+                    <li><span>Execution Time</span><strong class="time-value" id="bubbleTimeValue">—</strong></li>
+                </ul>
+            </div>
+            <div class="method-card merge-card">
+                <h4>🔀 Merge Sort</h4>
+                <ul class="method-stats">
+                    <li><span>Time Complexity</span><strong id="mergeComplexityValue">O(n log n)</strong></li>
+                    <li><span>Execution Time</span><strong class="time-value" id="mergeTimeValue">—</strong></li>
+                </ul>
+            </div>
+        </div>
 
-        <div class="winner-card" id="sortWinnerCard"></div>
-    </div>
-</section>
+        <div class="winner-card" id="sortWinnerCard">
+            <div class="winner-inner">
+                <span class="winner-icon">🏆</span>
+                <div>
+                    <p class="winner-label">Faster Algorithm</p>
+                    <h4 class="winner-name" id="sortWinnerName">Click Compare Sorts</h4>
+                    <p class="winner-desc" id="sortWinnerDesc">Enter numbers above and click Compare Sorts to see which algorithm is faster.</p>
+                </div>
+            </div>
+        </div>
 
-<section class="card animate-in" id="sortChartSection">
-    <div class="card-header">
-        <h2>Execution Time Comparison</h2>
-    </div>
-    <div class="card-body chart-container chart-animate">
-        <p class="chart-placeholder" id="sortChartPlaceholder">Click Compare Sorts to view the execution time graph.</p>
-        <canvas id="sortChart" class="hidden-section"></canvas>
+        <div class="complexity-output hidden-section" id="complexityOutput">
+            <h3>Time Complexity Comparison Output</h3>
+            <div class="complexity-output-grid">
+                <div class="complexity-output-item bubble-card">
+                    <span class="complexity-algo">Bubble Sort</span>
+                    <span class="complexity-value" id="bubbleComplexityOutput">O(n²)</span>
+                    <span class="complexity-note">Quadratic — grows quickly as array size increases</span>
+                </div>
+                <div class="complexity-output-item merge-card">
+                    <span class="complexity-algo">Merge Sort</span>
+                    <span class="complexity-value" id="mergeComplexityOutput">O(n log n)</span>
+                    <span class="complexity-note">Log-linear — scales efficiently for large arrays</span>
+                </div>
+            </div>
+            <p class="complexity-summary" id="complexitySummary">
+                Compare sorts to see how theoretical complexity relates to measured execution time.
+            </p>
+        </div>
     </div>
 </section>
 
