@@ -42,6 +42,7 @@ def friendly_faster(list_time, dict_time):
 
 
 def clear_contacts():
+    """Reset all in-memory contact storage structures."""
     global next_id
     contacts_list.clear()
     contacts_dict.clear()
@@ -50,6 +51,7 @@ def clear_contacts():
 
 
 def add_contact_to_storage(name, phone, email, category="Other"):
+    """Add a contact to the list, id dictionary, and phone hash index."""
     global next_id, last_added
     contact = {
         "id": next_id,
@@ -73,6 +75,7 @@ def add_contact_to_storage(name, phone, email, category="Other"):
 
 
 def remove_contact_from_storage(contact_id):
+    """Remove a contact from all storage structures by id."""
     contact = contacts_dict.pop(contact_id, None)
     if not contact:
         return None
@@ -82,6 +85,7 @@ def remove_contact_from_storage(contact_id):
 
 
 def update_contact_in_storage(contact_id, data):
+    """Update a contact and keep the phone hash index in sync."""
     contact = contacts_dict.get(contact_id)
     if not contact:
         return None
