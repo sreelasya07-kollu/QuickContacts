@@ -32,6 +32,7 @@ DEFAULT_CONTACTS = [
 
 
 def friendly_faster(list_time, dict_time):
+    """Return which search method was faster and update the dashboard label."""
     global best_search_method
     if dict_time <= list_time:
         best_search_method = "Smart Search"
@@ -130,6 +131,7 @@ def search_dict_by_phone(phone):
 
 
 def build_temp_contacts(size):
+    """Build a temporary contact list and phone index for benchmarking."""
     temp_list = []
     temp_phone = {}
 
@@ -177,6 +179,7 @@ def benchmark_temp_size(size):
 
 
 def benchmark_iterations():
+    """Choose repeat count for stable search timing on larger lists."""
     size = len(contacts_list)
     if size < 50:
         return 5000
@@ -186,6 +189,7 @@ def benchmark_iterations():
 
 
 def ms_from_seconds(seconds):
+    """Convert a seconds value from perf_counter into milliseconds."""
     return round(seconds * 1000, 6)
 
 
