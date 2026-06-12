@@ -109,6 +109,7 @@ def update_contact_in_storage(contact_id, data):
 
 
 def search_list_linear(query):
+    """Linear search O(n): scan the contact list one by one."""
     query_lower = query.lower()
     comparisons = 0
     results = []
@@ -122,6 +123,7 @@ def search_list_linear(query):
 
 
 def search_dict_by_phone(phone):
+    """Hash lookup O(1): find a contact by phone using the phone index."""
     comparisons = 1
     contact = phone_index.get(phone)
     results = [contact] if contact else []
