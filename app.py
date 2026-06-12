@@ -290,6 +290,7 @@ def bubble_sort(numbers):
 
 
 def merge(left, right):
+    """Merge two sorted lists into one sorted list."""
     result = []
     left_index = 0
     right_index = 0
@@ -316,6 +317,7 @@ def merge_sort(numbers):
 
 
 def parse_number_array(raw_value):
+    """Parse comma-separated input into a list of numbers for sorting."""
     if isinstance(raw_value, list):
         parts = raw_value
     else:
